@@ -235,7 +235,7 @@ void json_uint16(json_stream *json, uint16_t x) {
 
 void json_uint32(json_stream *json, uint32_t x) {
     char buffer[11];
-    size_t len = snprintf(buffer, sizeof(buffer), "%u", x);
+    size_t len = snprintf(buffer, sizeof(buffer), "%lu", x);
 
     _json_number(json, buffer, len);
 }

@@ -157,6 +157,8 @@ void homekit_mdns_configure_finalize() {
 
 #include <string.h>
 #include <mdns.h>
+#include <esp_random.h>
+#include <esp_system.h>
 
 uint32_t homekit_random() {
     return esp_random();

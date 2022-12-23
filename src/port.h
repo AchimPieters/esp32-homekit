@@ -16,11 +16,19 @@ void homekit_overclock_end();
 
 #ifdef ESP_IDF
 #include <esp_system.h>
-#include <esp_spi_flash.h>
-#define SPI_FLASH_SECTOR_SIZE SPI_FLASH_SEC_SIZE
-#define spiflash_read(addr, buffer, size) (spi_flash_read((addr), (buffer), (size)) == ESP_OK)
-#define spiflash_write(addr, data, size) (spi_flash_write((addr), (data), (size)) == ESP_OK)
-#define spiflash_erase_sector(addr) (spi_flash_erase_sector((addr) / SPI_FLASH_SECTOR_SIZE) == ESP_OK)
+//#include <esp_spi_flash.h>
+#include "spi_flash_mmap.h" // V5
+#include "esp_flash.h" // V5
+
+//https://docs.espressif.com/projects/esp-idf/en/v5.0/esp32c3/migration-guides/release-5.x/storage.html
+//https://docs.espressif.com/projects/esp-idf/en/v5.0-beta1/esp32/api-reference/storage/spi_flash.html
+#define ESP_FLASH_SECTOR_SIZE SPI_FLASH_SEC_SIZE
+//esp_err_t esp_flash_read(esp_flash_t *chip, void *buffer, uint32_t address, uint32_t length)
+#define esp_flash_read(NULL, buffer, addr, size) (esp_flash_read(NULL, (buffer), (addr), (size)) == ESP_OK)
+//esp_err_t esp_flash_write(esp_flash_t *chip, const void *buffer, uint32_t address, uint32_t length)
+#define esp_flash_write(NULL, buffer, addr, size) (esp_flash_write(NULL, (buffer), (addr), (size)) == ESP_OK)
+//esp_err_t esp_flash_erase_region(esp_flash_t *chip, uint32_t start, uint32_t len)
+#define esp_flash_erase_region(NULL, addr, size) (esp_flash_erase_region(NULL, (addr), (size) / ESP_FLASH_SECTOR_SIZE) == ESP_OK)
 #endif
 
 

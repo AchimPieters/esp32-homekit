@@ -36,22 +36,32 @@ int homekit_storage_init() {
     memset(magic, 0, sizeof(magic));
 
     //esp_err_t esp_flash_read(esp_flash_t *chip, void *buffer, uint32_t address, uint32_t length)
-    if (!esp_flash_read(NULL,(byte *)magic, MAGIC_ADDR, sizeof(magic))) {
-        ERROR("Failed to read HomeKit storage magic");
-    }
+    //if (!esp_flash_read(NULL,(byte *)magic, MAGIC_ADDR, sizeof(magic))) {
+    //    ERROR("Failed to read HomeKit storage magic");
+    //}
+    esp_err_t err_read = esp_flash_read(NULL,(byte *)magic, MAGIC_ADDR, sizeof(magic));
+     if (err_read != ESP_OK) {
+         ERROR("Failed to read HomeKit storage magic, error %s (0x%x)", esp_err_to_name(err_read), err_read);
+     }
 
     if (strncmp(magic, magic1, sizeof(magic1))) {
         INFO("Formatting HomeKit storage at 0x%x", ESPFLASH_BASE_ADDR);
         //esp_err_t esp_flash_erase_region(esp_flash_t *chip, uint32_t start, uint32_t len)
-        if (!esp_flash_erase_region(NULL, ESPFLASH_BASE_ADDR, sizeof(magic1))) {
-            ERROR("Failed to erase HomeKit storage");
+        //if (!esp_flash_erase_region(NULL, ESPFLASH_BASE_ADDR, sizeof(magic1))) {
+        //    ERROR("Failed to erase HomeKit storage");
+        esp_err_t err_erase = esp_flash_erase_region(NULL, ESPFLASH_BASE_ADDR, sizeof(magic));
+         if (err_erase != ESP_OK) {
+             ERROR("Failed to erase HomeKit storage, error %s (0x%x)", esp_err_to_name(err_erase), err_erase);
             return -1;
         }
 
         strncpy(magic, magic1, sizeof(magic));
         //esp_err_t esp_flash_write(esp_flash_t *chip, const void *buffer, uint32_t address, uint32_t length)
-        if (!esp_flash_write(NULL, (byte *)magic, MAGIC_ADDR, sizeof(magic))) {
-            ERROR("Failed to write HomeKit storage magic");
+        //if (!esp_flash_write(NULL, (byte *)magic, MAGIC_ADDR, sizeof(magic))) {
+        //    ERROR("Failed to write HomeKit storage magic");
+        esp_err_t err_write = esp_flash_write(NULL,(byte *)magic, MAGIC_ADDR, sizeof(magic));
+         if (err_write != ESP_OK) {
+             ERROR("Failed to write HomeKit storage magic, error %s (0x%x)", esp_err_to_name(err_write), err_write);
             return -1;
         }
 

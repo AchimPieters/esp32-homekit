@@ -1,8 +1,6 @@
 <b>ESP32-HOMEKIT</b>
 
-<sup>Apple HomeKit Accessory Server Library for IDF V5.0. Developing apps and accessories for the home.Let people communicate with and control connected accessories in their home using your app. With the HomeKit or Matter framework, you can provide users the ability to configure accessories and create actions to control them. Group those actions together into powerful automations and trigger them using Siri.</sup> 
-<br>
-<sup>See [esp32-homekit-demo](https://github.com/AchimPieters/esp32-homekit-demo) for examples.</sup> 
+<sup>Apple HomeKit Accessory Server Library for IDF V5.0. Developing apps and accessories for the home.Let people communicate with and control connected accessories in their home using your app. With the HomeKit or Matter framework, you can provide users the ability to configure accessories and create actions to control them. Group those actions together into powerful automations and trigger them using Siri. See [esp32-homekit-demo](https://github.com/AchimPieters/esp32-homekit-demo) for examples.</sup> 
 <br>
 <br>
 <sub><sup>____________________________________________________________________________________________________________________________</sup></sub>
@@ -19,9 +17,25 @@
 <sub><sup>____________________________________________________________________________________________________________________________</sup></sub>
 <br>
 <br>
-<b>QR CODE PAIRING</b>
+<b>ACCESSORY SETUP</b>
 
-<sup>You can use a QR code to pair with accessories. To enable that feature, you need to configure accessory to use static password and set some setup ID:</sup> 
+<sup>This chapter describes how the HomeKit setup payload information is generated, stored, displayed and delivered by
+the accessory to the controller for pairing purposes.</sup> 
+
+<sup><b>SETUP CODE</b></sup> 
+
+<sup>The Setup Code must conform to the format XXXXXXXX where each X is a 0-9 digit - for example, 10148005. For the
+purposes of generating accessory SRP verifier, the setup code must be formatted as
+XXX-XX-XXX (including dashes). In this example, the format of setup code used by the SRP verifier must be 101-
+48-005.</sup> 
+
+<sup><b>SETUP ID</b></sup> 
+
+<sup>This identifier is an alphanumeric string of 4(0-9, A-Z) characters. This identifier is persistent across reboots and
+factory reset of the accessory. This identifier must be different than the DeviceID, serial number, model or accessory
+name and must be random for each accessory instance manufactured by an accessory manufacturer.</sup> 
+
+
 ```
 homekit_server_config_t config = {
     .accessories = accessories,

@@ -1,24 +1,27 @@
 <b>ESP32-HOMEKIT</b>
 
-Apple HomeKit Accessory Server Library for IDF V5.0. Developing apps and accessories for the home.Let people communicate with and control connected accessories in their home using your app. With the HomeKit or Matter framework, you can provide users the ability to configure accessories and create actions to control them. Group those actions together into powerful automations and trigger them using Siri.
+<sup>Apple HomeKit Accessory Server Library for IDF V5.0. Developing apps and accessories for the home.Let people communicate with and control connected accessories in their home using your app. With the HomeKit or Matter framework, you can provide users the ability to configure accessories and create actions to control them. Group those actions together into powerful automations and trigger them using Siri.</sup> 
+<br>
+<sup>See [esp32-homekit-demo](https://github.com/AchimPieters/esp32-homekit-demo) for examples.</sup> 
+<br>
+<br>
+<sub><sup>____________________________________________________________________________________________________________________________</sup></sub>
 <br>
 <br>
 <b>WORKS WITH APPLE HOME BADGE</b>
 
+<sup>The Works with Apple Home badge can be used to visually communicate that your accessory is compatible with the Apple Home and Siri on Apple devices. If you plan to develop or manufacture a HomeKit accessory that will be distributed or sold, your company needs to be enrolled in the MFi Program.</sup> 
+
 <img  style="float: right;" src="https://github.com/AchimPieters/ESP32-SmartPlug/blob/main/images/works-with-apple-home.svg" width="150">
 
-The Works with Apple Home badge can be used to visually communicate that your accessory is compatible with the Apple Home and Siri on Apple devices. If you plan to develop or manufacture a HomeKit accessory that will be distributed or sold, your company needs to be enrolled in the MFi Program.
-
-
-See [esp32-homekit-demo](https://github.com/AchimPieters/esp32-homekit-demo) for examples.
 <br>
 <br>
-<sub><sup>-------------------------------------------------------------------------------------------------------------------------------------</sup></sub>
+<sub><sup>____________________________________________________________________________________________________________________________</sup></sub>
 <br>
 <br>
 <b>QR CODE PAIRING</b>
 
-You can use a QR code to pair with accessories. To enable that feature, you need to configure accessory to use static password and set some setup ID:
+<sup>You can use a QR code to pair with accessories. To enable that feature, you need to configure accessory to use static password and set some setup ID:</sup> 
 ```
 homekit_server_config_t config = {
     .accessories = accessories,
@@ -26,11 +29,20 @@ homekit_server_config_t config = {
     .setupId="1QJ8",
 };
 ```
+<br>
+<br>
+<sub><sup>____________________________________________________________________________________________________________________________</sup></sub>
+<br>
+<br>
 <b>GENERATE QR CODE</b>
 
-Then you need to generate QR code using supplied script:
+<sup>Then you need to generate QR code using supplied script:</sup>
 
-tools/gen_qrcode `5` `123-45-678` `1QJ8` qrcode.png
+```
+tools/gen_qrcode 5 123-45-678 1QJ8 qrcode.png
+```
+
+<sup><b>tools/gen_qrcode `5` `123-45-678` `1QJ8` qrcode.png</b></sup>
 
 
 | <sup><b>HOMEKIT ACCESSORY CATEGORY</b></sup> | <sup><b>NUMBER</b></sup> |

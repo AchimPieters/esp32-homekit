@@ -31,3 +31,40 @@ homekit_server_config_t config = {
 Then you need to generate QR code using supplied script:
 
 tools/gen_qrcode `5` `123-45-678` `1QJ8` qrcode.png
+
+
+| homekit accessory category | Number |
+|----------------------------|--------|
+| other                      | 1      |
+| bridges                    | 2      |
+| fans                       | 3      |
+| garage door openers        | 4      |
+| lighting                   | 5      |
+| locks                      | 6      |
+| outlets                    | 7      |
+| switches                   | 8      |
+| thermostats                | 9      |
+| sensors                    | 10     |
+| security systems           | 11     |
+| doors                      | 12     |
+| windows                    | 13     |
+| window coverings           | 14     |
+| programmable switches      | 15     |
+| range extenders            | 16     |
+| ip cameras                 | 17     |
+| video door bells           | 18     |
+| air purifiers              | 19     |
+| heaters                    | 20     |
+| air conditioners           | 21     |
+| humidifiers                | 22     |
+| dehumidifiers              | 23     |
+| apple tv                   | 24     |
+| speakers                   | 26     |
+| airport                    | 27     |
+| sprinklers                 | 28     |
+| faucets                    | 29     |
+| shower heads               | 30     |
+| televisions                | 31     |
+| target remotes             | 32     |
+
+

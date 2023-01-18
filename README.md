@@ -22,7 +22,7 @@
 <sup>This chapter describes how the HomeKit setup payload information is generated, stored, displayed and delivered by
 the accessory to the controller for pairing purposes.</sup> 
 
-<sup><b>SETUP CODE</b></sup> 
+<sup>SETUP CODE</sup>
 
 <sup>The Setup Code must conform to the format XXXXXXXX where each X is a 0-9 digit - for example, 10148005. For the
 purposes of generating accessory SRP verifier, the setup code must be formatted as
@@ -35,7 +35,6 @@ XXX-XX-XXX (including dashes). In this example, the format of setup code used by
 factory reset of the accessory. This identifier must be different than the DeviceID, serial number, model or accessory
 name and must be random for each accessory instance manufactured by an accessory manufacturer.</sup> 
 
-
 ```
 homekit_server_config_t config = {
     .accessories = accessories,
@@ -43,6 +42,7 @@ homekit_server_config_t config = {
     .setupId="1QJ8",
 };
 ```
+
 <br>
 <br>
 <sub><sup>____________________________________________________________________________________________________________________________</sup></sub>

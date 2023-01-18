@@ -33,38 +33,38 @@ Then you need to generate QR code using supplied script:
 tools/gen_qrcode `5` `123-45-678` `1QJ8` qrcode.png
 
 
-| homekit accessory category | Number |
+| <sup><b>HOMEKIT ACCESSORY CATEGORY</b></sup> | <sup><b>NUMBER</b></sup> |
 |----------------------------|--------|
-| other                      | 1      |
-| bridges                    | 2      |
-| fans                       | 3      |
-| garage door openers        | 4      |
-| lighting                   | 5      |
-| locks                      | 6      |
-| outlets                    | 7      |
-| switches                   | 8      |
-| thermostats                | 9      |
-| sensors                    | 10     |
-| security systems           | 11     |
-| doors                      | 12     |
-| windows                    | 13     |
-| window coverings           | 14     |
-| programmable switches      | 15     |
-| range extenders            | 16     |
-| ip cameras                 | 17     |
-| video door bells           | 18     |
-| air purifiers              | 19     |
-| heaters                    | 20     |
-| air conditioners           | 21     |
-| humidifiers                | 22     |
-| dehumidifiers              | 23     |
-| apple tv                   | 24     |
-| speakers                   | 26     |
-| airport                    | 27     |
-| sprinklers                 | 28     |
-| faucets                    | 29     |
-| shower heads               | 30     |
-| televisions                | 31     |
-| target remotes             | 32     |
+| <sup>other</sup>                      | <sup>1</sup>      |
+| <sup>bridges</sup>                    | <sup>2</sup>      |
+| <sup>fans</sup>                       | <sup>3</sup>      |
+| <sup>garage door openers</sup>        | <sup>4</sup>      |
+| <sup>lighting</sup>                   | <sup>5</sup>      |
+| <sup>locks</sup>                      | <sup>6</sup>      |
+| <sup>outlets</sup>                    | <sup>7</sup>      |
+| <sup>switches</sup>                   | <sup>8</sup>      |
+| <sup>thermostats</sup>                | <sup>9</sup>      |
+| <sup>sensors</sup>                    | <sup>10</sup>     |
+| <sup>security systems</sup>           | <sup>11</sup>     |
+| <sup>doors</sup>                      | <sup>12</sup>     |
+| <sup>windows</sup>                    | <sup>13</sup>     |
+| <sup>window coverings</sup>           | <sup>14</sup>     |
+| <sup>programmable switches</sup>      | <sup>15</sup>     |
+| <sup>range extenders</sup>            | <sup>16</sup>     |
+| <sup>ip cameras</sup>                 | <sup>17</sup>     |
+| <sup>video door bells</sup>           | <sup>18</sup>     |
+| <sup>air purifiers</sup>              | <sup>19</sup>     |
+| <sup>heaters</sup>                    | <sup>20</sup>     |
+| <sup>air conditioners</sup>           | <sup>21</sup>     |
+| <sup>humidifiers</sup>                | <sup>22</sup>     |
+| <sup>dehumidifiers</sup>              | <sup>23</sup>     |
+| <sup>apple tv</sup>                   | <sup>24</sup>     |
+| <sup>speakers</sup>                   | <sup>26</sup>     |
+| <sup>airport</sup>                    | <sup>27</sup>     |
+| <sup>sprinklers</sup>                 | <sup>28</sup>     |
+| <sup>faucets</sup>                    | <sup>29</sup>     |
+| <sup>shower heads</sup>               | <sup>30</sup>     |
+| <sup>televisions</sup>                | <sup>31</sup>     |
+| <sup>target remotes</sup>             | <sup>32</sup>     |
 
 

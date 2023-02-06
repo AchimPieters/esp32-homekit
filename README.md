@@ -105,8 +105,6 @@ tools/gen_qrcode 5 123-45-678 1QJ8 qrcode.png
 | <sup>Target remotes</sup>             | <sup>32</sup>     |
 
 
-
-
 <br>
 <sub><sup>-------------------------------------------------------------------------------------------------------------------------------------</sup></sub>
 <br>
@@ -134,3 +132,24 @@ tools/gen_qrcode 5 123-45-678 1QJ8 qrcode.png
 <sub><sup> The HomeKit Accessory Protocol Specification (Non-Commercial Version) can be downloaded from the HomeKit Apple Developer page.</sup></sub>
 
 <sub><sup> Copyright © 2019 Apple Inc. All rights reserved. </sup></sub>
+
+## Patition setup
+You need to add a custom partition of type data and subtype "homekit"
+and at least 4KB (0x1000) in size for HomeKit data storage. Put this into
+partitions.csv file in your project:
+
+```
+# ESP-IDF Partition Table
+# Name,   Type, SubType, Offset,  Size, Flags
+nvs,      data, nvs,     0x9000,  0x5000,
+phy_init, data, phy,     0xe000,  0x1000,
+homekit,  data, homekit, 0xf000,  0x1000,
+factory,  app,  factory, 0x10000, 1M,
+```
+
+Enable custom partitions in project configuration (sdkconfig):
+
+```
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+```

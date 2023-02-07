@@ -24,16 +24,12 @@ the accessory to the controller for pairing purposes.</sup>
 
 <sup>SETUP CODE</sup>
 
-<sup>The Setup Code must conform to the format XXXXXXXX where each X is a 0-9 digit - for example, 10148005. For the
-purposes of generating accessory SRP verifier, the setup code must be formatted as
-XXX-XX-XXX (including dashes). In this example, the format of setup code used by the SRP verifier must be 101-
+<sup>The Setup Code must conform to the format XXXXXXXX where each X is a 0-9 digit - for example, 10148005. For the purposes of generating accessory SRP verifier, the setup code must be formatted as XXX-XX-XXX (including dashes). In this example, the format of setup code used by the SRP verifier must be 101-
 48-005.</sup> 
 
 <sup><b>SETUP ID</b></sup> 
 
-<sup>This identifier is an alphanumeric string of 4(0-9, A-Z) characters. This identifier is persistent across reboots and
-factory reset of the accessory. This identifier must be different than the DeviceID, serial number, model or accessory
-name and must be random for each accessory instance manufactured by an accessory manufacturer.</sup> 
+<sup>This identifier is an alphanumeric string of 4(0-9, A-Z) characters. This identifier is persistent across reboots and factory reset of the accessory. This identifier must be different than the DeviceID, serial number, model or accessory name and must be random for each accessory instance manufactured by an accessory manufacturer.</sup> 
 
 ```
 homekit_server_config_t config = {
@@ -94,3 +90,32 @@ tools/gen_qrcode 5 123-45-678 1QJ8 qrcode.png
 | <sup>Target remotes</sup>             | <sup>32</sup>     |
 
 
+
+
+<br>
+<sub><sup>-------------------------------------------------------------------------------------------------------------------------------------</sup></sub>
+<br>
+
+**<sub>ORIGINAL PROJECT</sub>**
+
+<sub><sup>MIT LICENCE</sup></sub>
+
+<sub><sup>Copyright © 2017 [Maxim Kulkin | ESP-Homekit-demo](https://github.com/maximkulkin/esp-homekit-demo)</sup></sub>
+
+<sub><sup>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</sup></sub>
+
+*<sub><sup>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software</sup></sub>*
+
+<sub><sup>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</sup></sub>
+
+<br>
+<sub><sup>-------------------------------------------------------------------------------------------------------------------------------------</sup></sub>
+<br>
+
+**<sub>APPLE HOME</sub>**
+
+<img  style="float: right;" src="https://github.com/AchimPieters/ESP32-SmartPlug/blob/main/images/apple_logo.png" width="10"> <sub><sup>HomeKit Accessory Protocol (HAP) is Apple’s proprietary protocol that enables third-party accessories in the home (e.g., lights, thermostats and door locks) and Apple products to communicate with each other. HAP supports two transports, IP and Bluetooth LE. The information provided in the HomeKit Accessory Protocol Specification (Non-Commercial Version) describes how to implement HAP in an accessory that you create for non-commercial use and that will not be distributed or sold.</sup></sub>
+
+<sub><sup> The HomeKit Accessory Protocol Specification (Non-Commercial Version) can be downloaded from the HomeKit Apple Developer page.</sup></sub>
+
+<sub><sup> Copyright © 2019 Apple Inc. All rights reserved. </sup></sub>

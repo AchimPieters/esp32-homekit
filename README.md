@@ -52,8 +52,23 @@ homekit_server_config_t config = {
 tools/gen_qrcode 5 123-45-678 1QJ8 qrcode.png
 ```
 
+<sup><b>HOW TO USE</b></sup>
+
+<sup>Above you see the line that is used to generate the QR code. It's madeup from a few parts:</sup>
+
+<sup>`5` = HOMEKIT ACCESSORY CATEGORY (see table below)</sup>
+
+<sup>`123-45-678` = SETUP CODE (formatted as XXX-XX-XXX)</sup>
+
+<sup>`1QJ8` = SETUP ID (made from 4 random characters)</sup>
+
+<sup>This wil give you this line:</sup>
+
 <sup><b>tools/gen_qrcode `5` `123-45-678` `1QJ8` qrcode.png</b></sup>
 
+<sup>Once you press enter the QR-code will be generated, and can be found in the `TOOLS` folder as an .png image.</sup>
+<br>
+<br>
 
 | <sup><b>HOMEKIT ACCESSORY CATEGORY</b></sup> | <sup><b>NUMBER</b></sup> |
 |----------------------------|--------|

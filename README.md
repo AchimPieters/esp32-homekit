@@ -8,7 +8,7 @@
 <br>
 <b>PARTITION SETUP</b>
 
-<sup>You need to add a custom partition of type data and subtype "homekit" and at least 4KB (0x1000) in size for HomeKit data storage. Put this into partitions.csv file in your project:</sup> 
+<sup>You need to add a custom partition of type data and subtype "homekit" and at least 4KB (0x1000) in size for HomeKit data storage. Put this into `partitions.csv` file in your project:</sup> 
 
 ```
 # ESP-IDF Partition Table

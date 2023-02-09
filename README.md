@@ -6,17 +6,31 @@
 <sub><sup>____________________________________________________________________________________________________________________________</sup></sub>
 <br>
 <br>
-<b>WORKS WITH APPLE HOME BADGE</b>
+<b>PARTITION SETUP</b>
 
-<sup>The Works with Apple Home badge can be used to visually communicate that your accessory is compatible with the Apple Home and Siri on Apple devices. If you plan to develop or manufacture a HomeKit accessory that will be distributed or sold, your company needs to be enrolled in the MFi Program.</sup> 
+<sup>You need to add a custom partition of type data and subtype "homekit" and at least 4KB (0x1000) in size for HomeKit data storage. Put this into partitions.csv file in your project:</sup> 
 
-<img  style="float: right;" src="https://github.com/AchimPieters/ESP32-SmartPlug/blob/main/images/works-with-apple-home.svg" width="150">
+```
+# ESP-IDF Partition Table
+# Name,   Type, SubType, Offset,  Size, Flags
+nvs,      data, nvs,     0x9000,  0x5000,
+phy_init, data, phy,     0xe000,  0x1000,
+homekit,  data, homekit, 0xf000,  0x1000,
+factory,  app,  factory, 0x10000, 1M,
+```
 
+<sup>Enable custom partitions in project configuration (sdkconfig):</sup> 
+
+```
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+```
 <br>
 <br>
 <sub><sup>____________________________________________________________________________________________________________________________</sup></sub>
 <br>
 <br>
+
 <b>ACCESSORY SETUP</b>
 
 <sup>This chapter describes how the HomeKit setup payload information is generated, stored, displayed and delivered by
@@ -103,10 +117,20 @@ tools/gen_qrcode 5 123-45-678 1QJ8 qrcode.png
 | <sup>Shower heads</sup>               | <sup>30</sup>     |
 | <sup>Televisions</sup>                | <sup>31</sup>     |
 | <sup>Target remotes</sup>             | <sup>32</sup>     |
-
-
+<br>
 <br>
 <sub><sup>-------------------------------------------------------------------------------------------------------------------------------------</sup></sub>
+<br>
+<b>WORKS WITH APPLE HOME BADGE</b>
+
+<sup>The Works with Apple Home badge can be used to visually communicate that your accessory is compatible with the Apple Home and Siri on Apple devices. If you plan to develop or manufacture a HomeKit accessory that will be distributed or sold, your company needs to be enrolled in the MFi Program.</sup> 
+
+<img  style="float: right;" src="https://github.com/AchimPieters/ESP32-SmartPlug/blob/main/images/works-with-apple-home.svg" width="150">
+
+<br>
+<br>
+<sub><sup>____________________________________________________________________________________________________________________________</sup></sub>
+<br>
 <br>
 
 **<sub>ORIGINAL PROJECT</sub>**
@@ -133,23 +157,4 @@ tools/gen_qrcode 5 123-45-678 1QJ8 qrcode.png
 
 <sub><sup> Copyright © 2019 Apple Inc. All rights reserved. </sup></sub>
 
-## Patition setup
-You need to add a custom partition of type data and subtype "homekit"
-and at least 4KB (0x1000) in size for HomeKit data storage. Put this into
-partitions.csv file in your project:
 
-```
-# ESP-IDF Partition Table
-# Name,   Type, SubType, Offset,  Size, Flags
-nvs,      data, nvs,     0x9000,  0x5000,
-phy_init, data, phy,     0xe000,  0x1000,
-homekit,  data, homekit, 0xf000,  0x1000,
-factory,  app,  factory, 0x10000, 1M,
-```
-
-Enable custom partitions in project configuration (sdkconfig):
-
-```
-CONFIG_PARTITION_TABLE_CUSTOM=y
-CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
-```

@@ -1,6 +1,8 @@
 #include <string.h>
 
-// #include "user_settings.h"
+#include <wolfssl/wolfcrypt/settings.h>
+#include <user_settings.h>
+
 #include <wolfssl/ssl.h>
 #include <wolfssl/wolfcrypt/hmac.h>
 #include <wolfssl/wolfcrypt/ed25519.h>
@@ -277,7 +279,7 @@ int crypto_chacha20poly1305_decrypt(
     const byte *message, size_t message_size,
     byte *decrypted, size_t *decrypted_size
 ) {
-    if (message_size <= CHACHA20_POLY1305_AEAD_AUTHTAG_SIZE) { 
+    if (message_size <= CHACHA20_POLY1305_AEAD_AUTHTAG_SIZE) {
         DEBUG("Decrypted message is too small");
         return -2;
     }
@@ -544,4 +546,3 @@ int crypto_curve25519_shared_secret(const curve25519_key *private_key, const cur
     *size = len;
     return r;
 }
-

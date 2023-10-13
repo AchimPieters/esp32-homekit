@@ -4471,7 +4471,8 @@ int homekit_get_setup_uri(const homekit_server_config_t *config, char *buffer, s
 
     uint32_t setup_code = 0;
     for (const char *s = config->password; *s; s++)
-        if ISDIGIT(*s)
+      if ISDIGIT(*s)
+
             setup_code = setup_code * 10 + *s - '0';
 
     uint64_t payload = 0;

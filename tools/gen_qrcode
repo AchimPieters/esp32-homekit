@@ -15,13 +15,12 @@ BASE36 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 PAYLOAD_VERSION = 0
 PAYLOAD_FLAGS = 2  # 2=IP, 4=BLE, 8=IP_WAC
 
-
 def gen_homekit_setup_uri(category, password, setup_id, version=0, reserved=0, flags=2):
     payload = 0
     payload |= (version & 0x7)
 
     payload <<= 4
-    payload |= (reserved & 0xf)  # reserved bits
+    payload |=(reserved & 0xf)  # reserved bits
 
     payload <<= 8
     payload |= (category & 0xff)
@@ -50,8 +49,7 @@ def gen_homekit_qrcode(setup_uri, password, transparent=False):
     draw = PIL.ImageDraw.Draw(img)
 
     if not transparent:
-        draw.rounded_rectangle(
-            (5, 5, img.width - 5, img.height - 5), 60, fill='white')
+        draw.rounded_rectangle((5, 5, img.width-5, img.height-5), 60, fill='white')
 
     img.paste(template, (0, 0), template)
 
@@ -61,24 +59,21 @@ def gen_homekit_qrcode(setup_uri, password, transparent=False):
     code.add_data(setup_uri)
     img.paste(
         code.
-        make_image(fill_color='black',
-                   back_color='transparent' if transparent else 'white').
-        get_image().
-        resize((320, 320)),
+            make_image(fill_color='black',
+                       back_color='transparent' if transparent else 'white').
+            get_image().
+            resize((320, 320)),
         (40, 180)
     )
 
     # add password digits
     setup_code = password.replace('-', '')
 
-    font = PIL.ImageFont.truetype(
-        os.path.join(script_dir, 'SF-Mono-Bold.otf'), 69)
+    font = PIL.ImageFont.truetype(os.path.join(script_dir, 'SF-Mono-Bold.otf'), 69)
 
     for i in range(4):
-        draw.text((173 + i * 49, 38 - 13),
-                  setup_code[i], font=font, fill=(0, 0, 0))
-        draw.text((173 + i * 49, 88),
-                  setup_code[i + 4], font=font, fill=(0, 0, 0))
+        draw.text((173 + i*49, 38-13), setup_code[i], font=font, fill=(0, 0, 0))
+        draw.text((173 + i*49, 88), setup_code[i+4], font=font, fill=(0, 0, 0))
 
     return img
 
@@ -99,8 +94,7 @@ def main():
     if not re.match('[0-9A-Z]{4}', args.setup_id):
         raise ValueError('Invalid setup ID')
 
-    setupURI = gen_homekit_setup_uri(
-        args.category, args.password, args.setup_id)
+    setupURI = gen_homekit_setup_uri(args.category, args.password, args.setup_id)
 
     qrcodeImage = gen_homekit_qrcode(
         setupURI, args.password, transparent=args.transparent

@@ -7,12 +7,12 @@ typedef void (*tlv_flush_callback)(uint8_t *buffer, size_t size, void *context);
 
 
 typedef struct {
-    uint8_t *buffer;
-    size_t size;
-    size_t pos;
+        uint8_t *buffer;
+        size_t size;
+        size_t pos;
 
-    tlv_flush_callback on_flush;
-    void *context;
+        tlv_flush_callback on_flush;
+        void *context;
 } tlv_stream_t;
 
 

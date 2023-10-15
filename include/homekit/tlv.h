@@ -7,15 +7,15 @@
 typedef unsigned char byte;
 
 typedef struct _tlv {
-    struct _tlv *next;
-    byte type;
-    byte *value;
-    size_t size;
+        struct _tlv *next;
+        byte type;
+        byte *value;
+        size_t size;
 } tlv_t;
 
 
 typedef struct {
-    tlv_t *head;
+        tlv_t *head;
 } tlv_values_t;
 
 

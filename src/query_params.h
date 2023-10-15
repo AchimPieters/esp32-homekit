@@ -4,18 +4,18 @@
 #include <stdbool.h>
 
 typedef struct {
-    char *data;
-    size_t len;
-    size_t pos;
+        char *data;
+        size_t len;
+        size_t pos;
 } query_param_iterator_t;
 
 
 typedef struct {
-    char *name;
-    size_t name_len;
+        char *name;
+        size_t name_len;
 
-    char *value;
-    size_t value_len;
+        char *value;
+        size_t value_len;
 } query_param_t;
 
 int query_param_iterator_init(query_param_iterator_t *it, const char *s, size_t len);

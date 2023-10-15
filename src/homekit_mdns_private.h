@@ -36,12 +36,10 @@
 
 
 static inline uint16_t mdns_read_u16(const uint8_t *data) {
-    return (((uint16_t)data[0]) << 8) | data[1];
+        return (((uint16_t)data[0]) << 8) | data[1];
 }
 
 
 static inline uint32_t mdns_read_u32(const uint8_t *data) {
-    return (((((((uint32_t)data[0]) << 8) | data[1]) << 8) | data[2]) << 8) | data[3];
+        return (((((((uint32_t)data[0]) << 8) | data[1]) << 8) | data[2]) << 8) | data[3];
 }
-
-

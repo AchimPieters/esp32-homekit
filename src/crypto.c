@@ -247,7 +247,7 @@ int crypto_hkdf(
         *output_size = 32;
 
         int r = wc_HKDF(
-                SHA512,
+                WC_SHA512,
                 key, key_size,
                 salt, salt_size,
                 info, info_size,

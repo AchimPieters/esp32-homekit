@@ -52,6 +52,15 @@ homekit_server_config_t config = {
     .setupId="1QJ8",
 };
 ```
+<br>
+<br>
+<sub><sup>____________________________________________________________________________________________________________________________</sup></sub>
+<br>
+<br>
+<b> QR CODE PREQUISITES</b>
+python3 -m pip install --upgrade pip
+python3 -m pip install --upgrade Pillow
+pip install qrcode
 
 <br>
 <br>

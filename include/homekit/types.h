@@ -246,7 +246,7 @@ void homekit_characteristic_default_setter_ex(homekit_characteristic_t *ch, home
         & (homekit_accessory_t) { \
                 .config_number=1, \
                 .category=homekit_accessory_category_other, \
-                ## __VA_ARGS__ \
+                ##__VA_ARGS__ \
         }
 
 // Macro to define service inside accessory definition.

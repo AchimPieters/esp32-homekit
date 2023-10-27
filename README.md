@@ -52,6 +52,53 @@ homekit_server_config_t config = {
     .setupId="1QJ8",
 };
 ```
+<br>
+<br>
+<sub><sup>____________________________________________________________________________________________________________________________</sup></sub>
+<br>
+<br>
+<b> QR CODE PREREQUISITES</b>
+
+<sup>Before you can generate the QR-Code for you HomeKit device you nee to install Python and some libraries</sup>
+
+<sup>While OS X comes with a large number of Unix utilities, those familiar with Linux systems will notice one key component missing: a package manager. Homebrew fills this void. To install Homebrew, open Terminal or your favorite OS X terminal emulator and run</sup>
+
+```
+$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+```
+<sup>The script will explain what changes it will make and prompt you before the installation begins. Once you’ve installed Homebrew, insert the Homebrew directory at the top of your PATH environment variable. You can do this by adding the following line at the bottom of your ~/.profile file</sup>
+
+```
+export PATH="/usr/local/opt/python/libexec/bin:$PATH"
+```
+
+<sup>If you have OS X 10.12 (Sierra) or older use this line instead</sup>
+
+```
+export PATH=/usr/local/bin:/usr/local/sbin:$PATH
+```
+
+<sup>Now, we can install Python 3:</sup>
+
+```
+$ brew install python
+```
+
+<sup>This will take a minute or two.</sup>
+
+<sup>Then install Pillow. The core image library is designed for fast access to data stored in a few basic pixel formats. It should provide a solid foundation for a general image processing tool.</sup>
+
+```
+python3 -m pip install --upgrade pip
+```
+
+```
+python3 -m pip install --upgrade Pillow
+```
+<sup>The the last library to generate te qrcode. A standard install uses pypng to generate PNG files and can also render QR codes directly to the console.</sup>
+```
+pip install qrcode
+```
 
 <br>
 <br>

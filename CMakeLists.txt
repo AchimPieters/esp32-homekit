@@ -7,7 +7,7 @@ idf_component_register(
         "src/homekit_mdns_debug.c"
     INCLUDE_DIRS "include"
     PRIV_INCLUDE_DIRS "src"
-    REQUIRES wolfssl esp_partition json http-parser mdns spi_flash nvs_flash
+    REQUIRES wolfssl esp_partition json http-parser mdns spi_flash
 )
 
 #if(CONFIG_HOMEKIT_SMALL)

@@ -24,7 +24,7 @@
 #error "Unknown target platform"
 #endif
 
-#include <http_parser>
+#include <http_parser.h>
 #include <cJSON.h>
 #include <wolfssl/wolfcrypt/hash.h>
 #include <wolfssl/wolfcrypt/coding.h>

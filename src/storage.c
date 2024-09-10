@@ -329,6 +329,7 @@ int homekit_storage_save_accessory_id(const char *accessory_id) {
 
 int homekit_storage_load_accessory_id(char *accessory_id) {
         esp_err_t err = homekit_storage_read("accessory_id", (void *)accessory_id, ACCESSORY_ID_SIZE);
+        accessory_id[ACCESSORY_ID_SIZE]=0;
         if (err != ESP_OK) {
                 ERROR("Failed to load accessory ID: %s", esp_err_to_name(err));
                 return -1;

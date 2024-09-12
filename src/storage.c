@@ -33,6 +33,7 @@
 
 #include "nvs_flash.h"
 #include "nvs.h"
+#include "storage.h"
 
 #define NVS_NAMESPACE "homekit"
 #define MAX_PAIRINGS 16
@@ -50,31 +51,9 @@ typedef struct {
         uint8_t _reserved[7]; // Padding for alignment
 } pairing_data_t;
 
-typedef struct {
-        int idx;
-} pairing_iterator_t;
-
-// Function prototypes
-int homekit_storage_read(const char* key, void *dst, size_t size);
-int homekit_storage_write(const char* key, void *src, size_t size);
-int homekit_storage_init();
-int homekit_storage_reset();
-int homekit_storage_find_pairing(const char *device_id, pairing_t *pairing);
-int homekit_storage_add_pairing(const char *device_id, const ed25519_key *device_key, uint8_t permissions);
-int homekit_storage_update_pairing(const char *device_id, uint8_t permissions);
-int homekit_storage_can_add_pairing();
-int homekit_storage_remove_pairing(const char *device_id);
-void homekit_storage_pairing_iterator_init(pairing_iterator_t *it);
-void homekit_storage_pairing_iterator_done(pairing_iterator_t *it);
-int homekit_storage_next_pairing(pairing_iterator_t *it, pairing_t *pairing);
-int homekit_storage_save_accessory_id(const char *accessory_id);
-int homekit_storage_load_accessory_id(char *accessory_id);
-int homekit_storage_save_accessory_key(const ed25519_key *key);
-int homekit_storage_load_accessory_key(ed25519_key *key);
-
 // Implement the storage functions
 
-int homekit_storage_read(const char* key, void *dst, size_t size) {
+static int homekit_storage_read(const char* key, void *dst, size_t size) {
         esp_err_t err = nvs_get_blob(homekit_nvs_handle, key, dst, &size);
         if (err != ESP_OK) {
                 if (err == ESP_ERR_NVS_NOT_FOUND) {
@@ -87,7 +66,7 @@ int homekit_storage_read(const char* key, void *dst, size_t size) {
         return 0;
 }
 
-int homekit_storage_write(const char* key, void *src, size_t size) {
+static int homekit_storage_write(const char* key, void *src, size_t size) {
         esp_err_t err = nvs_set_blob(homekit_nvs_handle, key, src, size);
         if (err != ESP_OK) {
                 DEBUG("NVS write failed: %s (0x%x)", esp_err_to_name(err), err);

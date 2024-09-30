@@ -23,10 +23,10 @@
 
  **/
 
-#ifndef __STORAGE_H__
-#define __STORAGE_H__
+ #ifndef __STORAGE_H__
+ #define __STORAGE_H__
 
-#include "pairing.h"
+ #include "pairing.h"
 
 typedef struct {
         int idx;
@@ -52,4 +52,4 @@ void homekit_storage_pairing_iterator_init(pairing_iterator_t *it);
 int homekit_storage_next_pairing(pairing_iterator_t *it, pairing_t *pairing);
 void homekit_storage_pairing_iterator_done(pairing_iterator_t *it);
 
-#endif // __STORAGE_H__
+ #endif // __STORAGE_H__

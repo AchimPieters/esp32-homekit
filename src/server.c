@@ -1,3 +1,28 @@
+/**
+
+   Copyright 2024 Achim Pieters | StudioPieters®
+
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software and associated documentation files (the "Software"), to deal
+   in the Software without restriction, including without limitation the rights
+   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   copies of the Software, and to permit persons to whom the Software is
+   furnished to do so, subject to the following conditions:
+
+   The above copyright notice and this permission notice shall be included in all
+   copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+   CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+   for more information visit https://www.studiopieters.nl
+
+ **/
+
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -3300,11 +3325,12 @@ void homekit_server_on_pairings(client_context_t *context, const byte *data, siz
                                 homekit_storage_pairing_iterator_done(&pairing_it);
 
                                 if (!admin_found) {
-                                        // No admins left, enable pairing again
-                                        INFO("Last admin pairing was removed, enabling pair setup");
+                                        // No admins left, start over again
+                                        INFO("Last admin pairing was removed, restoring Homekit to factory default and restart");
 
-                                        context->server->paired = false;
-                                        homekit_setup_mdns(context->server);
+                                        homekit_storage_reset();
+                                        vTaskDelay(50); //allow other stuff to settle
+                                        esp_restart();
                                 }
                         }
                 }
@@ -3363,6 +3389,15 @@ void homekit_server_on_pairings(client_context_t *context, const byte *data, siz
                 break;
         }
         }
+
+        //show the current state of pairing records
+        pairing_iterator_t pairing_it;
+        homekit_storage_pairing_iterator_init(&pairing_it);
+        pairing_t pairing;
+        while (!homekit_storage_next_pairing(&pairing_it, &pairing)) {
+                INFO("Paired with %s with permission %d", pairing.device_id, pairing.permissions);
+        }
+        homekit_storage_pairing_iterator_done(&pairing_it);
 
         tlv_free(message);
 }
@@ -4134,10 +4169,10 @@ void homekit_server_task(void *args) {
 
         pairing_t pairing;
         while (!homekit_storage_next_pairing(&pairing_it, &pairing)) {
-                if (pairing.permissions & pairing_permissions_admin) {
-                        INFO("Found admin pairing with %s, disabling pair setup", pairing.device_id);
+                INFO("Paired with %s with permission %d", pairing.device_id, pairing.permissions);
+                if ( server->paired==false && (pairing.permissions & pairing_permissions_admin)) {
+                        INFO("Found admin pairing, disabling pair setup");
                         server->paired = true;
-                        break;
                 }
         }
         homekit_storage_pairing_iterator_done(&pairing_it);

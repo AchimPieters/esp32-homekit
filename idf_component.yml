@@ -3,3 +3,5 @@ dependencies:
     version: ">=5.0"
   espressif/mdns:
     version: "1.4.0"
+  wolfssl/wolfssl:
+    version: "5.7.4-preview1e"

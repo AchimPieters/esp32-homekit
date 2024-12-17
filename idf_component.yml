@@ -4,4 +4,4 @@ dependencies:
   espressif/mdns:
     version: "1.4.0"
   wolfssl/wolfssl:
-    version: "5.7.4-preview1e"
+    version: "5.7.4-preview1f"

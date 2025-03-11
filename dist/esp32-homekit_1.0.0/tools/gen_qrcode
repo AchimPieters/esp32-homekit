@@ -13,7 +13,7 @@ script_dir = os.path.dirname(os.path.realpath(__file__))
 BASE36 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 PAYLOAD_VERSION = 0
-PAYLOAD_FLAGS = 4  # 2=IP, 4=BLE, 8=IP_WAC
+PAYLOAD_FLAGS = 2  # 2=IP, 4=BLE, 8=IP_WAC
 
 def gen_homekit_setup_uri(category, password, setup_id, version=0, reserved=0, flags=2):
     payload = 0

@@ -1,0 +1,56 @@
+dependencies:
+  achimpieters/esp32-homekit:
+    component_hash: 43deaf6be3c531e36e03ba50f8950dc89d471c8b9a71867321c9289f89ee0f87
+    dependencies:
+    - name: espressif/mdns
+      registry_url: https://components.espressif.com
+      require: private
+      version: 1.8.0
+    - name: idf
+      require: private
+      version: '>=5.0'
+    - name: wolfssl/wolfssl
+      registry_url: https://components.espressif.com
+      require: private
+      version: 5.7.6
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    targets:
+    - esp32
+    - esp32c2
+    - esp32c3
+    - esp32c5
+    - esp32c6
+    - esp32s2
+    - esp32s3
+    - esp32h2
+    - esp32p4
+    version: 1.0.0
+  espressif/mdns:
+    component_hash: 7fd79958fd0b9a4917ee4f50141fe29c902c02d1a1feb1d6751276049b186d6b
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=5.0'
+    source:
+      registry_url: https://components.espressif.com
+      type: service
+    version: 1.8.0
+  idf:
+    source:
+      type: idf
+    version: 5.5.0
+  wolfssl/wolfssl:
+    component_hash: 7ca62417d67351de6c6da189c10f8305946f31aa8d94d3ec3af5602e08a8c919
+    dependencies: []
+    source:
+      registry_url: https://components.espressif.com
+      type: service
+    version: 5.7.6
+direct_dependencies:
+- achimpieters/esp32-homekit
+- idf
+manifest_hash: d6e7060751493266f03deec6c1cd11c8ff403c62791ce348ffa686b800b6ac4c
+target: esp32
+version: 2.0.0

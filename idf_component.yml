@@ -1,7 +1,5 @@
 name: "esp32-homekit"
 version: "1.2.0"
-examples:
-  - path: "examples/led"
 description: "Apple HomeKit Accessory Server Library for IDF V5.x."
 url: "https://github.com/AchimPieters/esp32-homekit"
 maintainers:

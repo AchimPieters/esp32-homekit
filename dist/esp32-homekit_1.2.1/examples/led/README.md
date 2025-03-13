@@ -14,17 +14,14 @@ Connect `LED` pin to the following pin:
 
 ## Scheme
 
-![HomeKit LED](https://raw.githubusercontent.com/AchimPieters/esp32-homekit/refs/heads/main/images/Homekit_led.png)
+![alt text](./scheme.png)
 
 ## Requirements
 
-- **idf version:** `>=5.0`
-- **espressif/mdns version:** `1.8.0`
-- **wolfssl/wolfssl version:** `5.7.6`
-- **achimpieters/esp32-homekit version:** `1.0.0`
+To enable support for Apple HomeKit, be sure to check the respective box in `idf.py menuconfig`.
 
 ## Notes
 
 - Choose your GPIO number under `StudioPieters` in `menuconfig`. The default is `2` (On an ESP32 WROOM 32D).
 - Set your `WiFi SSID` and `WiFi Password` under `StudioPieters` in `menuconfig`.
-- **Optional:** You can change `HomeKit Setup Code` and `HomeKit Setup ID` under `StudioPieters` in `menuconfig`. _(Note: you need to make a new QR-CODE to make it work.)_
+- Optional: You can change `HomeKit Setup Code` and `HomeKit Setup ID` under `StudioPieters` in `menuconfig`. (Note:  you need to make a new QR-CODE To make it work)

@@ -206,20 +206,21 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.</sub>
 
-<img src="https://raw.githubusercontent.com/AchimPieters/esp32-homekit/refs/heads/main/images/MIT| SOFTWARE WHITE.svg" width="150">
+
+<img  style="float: right;" src="https://raw.githubusercontent.com/AchimPieters/esp32-homekit/refs/heads/main/images/MIT| SOFTWARE WHITE.svg" width="150">
 
 <sub>__________________________________________________________________________________________</sub>
 
 ###### WORKS WITH APPLE HOME BADGE
 <sub>The Works with Apple Home badge can be used to visually communicate that your accessory is compatible with the Apple Home and Siri on Apple devices. If you plan to develop or manufacture a HomeKit accessory that will be distributed or sold, your company needs to be enrolled in the MFi Program.</sub>
 
-<img src="https://raw.githubusercontent.com/AchimPieters/esp32-homekit/refs/heads/main/images/works-with-apple-home.svg" width="150">
+<img  style="float: right;" src="https://raw.githubusercontent.com/AchimPieters/esp32-homekit/refs/heads/main/images/works-with-apple-home.svg" width="150">
 
 <sub>__________________________________________________________________________________________</sub>
 
-###### APPLE HOME
+###### APPLE HOME 
 <sub>HomeKit Accessory Protocol (HAP) is Apple’s proprietary protocol that enables third-party accessories in the home (e.g., lights, thermostats and door locks) and Apple products to communicate with each other. HAP supports two transports, IP and Bluetooth LE. The information provided in the HomeKit Accessory Protocol Specification (Non-Commercial Version) describes how to implement HAP in an accessory that you create for non-commercial use and that will not be distributed or sold.</sub>
 
 <sub>The HomeKit Accessory Protocol Specification (Non-Commercial Version) can be downloaded from the HomeKit Apple Developer page.</sub>
 
-<sub align="left"> <img src="https://raw.githubusercontent.com/AchimPieters/esp32-homekit/refs/heads/main/images/apple_logo.png" width="10"> Copyright © 2019 Apple Inc. All rights reserved.</sub>
+<sub><img  style="float: right;" src="https://raw.githubusercontent.com/AchimPieters/esp32-homekit/refs/heads/main/images/apple_logo.png" width="10"> Copyright © 2019 Apple Inc. All rights reserved.</sub>

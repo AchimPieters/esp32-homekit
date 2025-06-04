@@ -28,10 +28,13 @@ size_t base64_encoded_size(const unsigned char *data, size_t size) {
 }
 
 size_t base64_decoded_size(const unsigned char *encoded_data, size_t encoded_size) {
-        size_t size = (encoded_size + 3)/4*3;
-        if (encoded_data[encoded_size-1] == '=')
+        if (encoded_size == 0)
+                return 0;
+
+        size_t size = (encoded_size + 3) / 4 * 3;
+        if (encoded_size > 0 && encoded_data[encoded_size - 1] == '=')
                 size--;
-        if (encoded_data[encoded_size-2] == '=')
+        if (encoded_size > 1 && encoded_data[encoded_size - 2] == '=')
                 size--;
         return size;
 }

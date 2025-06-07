@@ -19,8 +19,8 @@ Connect `LED` pin to the following pin:
 ## Requirements
 
 - **idf version:** `>=5.0`
-- **espressif/mdns version:** `1.8.0`
-- **wolfssl/wolfssl version:** `5.7.6`
+- **espressif/mdns version:** `1.8.2`
+- **wolfssl/wolfssl version:** `5.8.0`
 - **achimpieters/esp32-homekit version:** `1.0.0`
 
 ## Notes

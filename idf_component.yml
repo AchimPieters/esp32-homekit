@@ -11,9 +11,9 @@ dependencies:
   idf:
     version: ">=5.0"
   espressif/mdns:
-    version: "1.8.0"
+    version: "1.8.2"
   wolfssl/wolfssl:
-    version: "5.7.6"
+    version: "5.8.0"
 targets:
   - "esp32"
   - "esp32c2"

@@ -1,3 +1,11 @@
+## [1.2.5] - 2025-06-11
+
+### Added
+- Updated wolfssl to 5.8.0 and espressif/mdns to 1.8.2
+- Fix base64 decoded size calculation for short inputs
+
+### Removed
+- Removed outdated and incorrect information.
 
 ## [1.2.4] - 2025-03-13
 

@@ -4434,8 +4434,17 @@
  int homekit_get_setup_uri(const homekit_server_config_t *config, char *buffer, size_t buffer_size) {
          static const char base36Table[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-         if (buffer_size < 20)
-                 return -1;
+        /*
+         * The resulting setup URI consists of:
+         *   - 7 characters for the "X-HM://" prefix
+         *   - 9 characters for the encoded payload
+         *   - 4 characters for the setupId
+         * plus the terminating null byte.
+         * This totals 21 bytes, so ensure the caller provided
+         * a buffer large enough to hold the entire string.
+         */
+        if (buffer_size < 21)
+                return -1;
 
          if (!config->password)
                  return -1;

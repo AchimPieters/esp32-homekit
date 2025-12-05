@@ -102,10 +102,14 @@ static int crypto_seed_rng(byte *output, word32 sz) {
 static void crypto_configure_rng_seed() {
         static bool seed_cb_initialized = false;
 
+#ifdef WC_RNG_SEED_CB
         if (!seed_cb_initialized) {
                 wc_SetSeed_Cb(&crypto_seed_rng);
                 seed_cb_initialized = true;
         }
+#else
+        (void)seed_cb_initialized;
+#endif
 }
 
 

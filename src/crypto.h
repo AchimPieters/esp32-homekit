@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 
-#include <wolfssl/options.h>
+#include "wolfssl/options.h"
 
 // Ensure the required WolfSSL features are enabled even when build flags are
 // missed by the component manager.

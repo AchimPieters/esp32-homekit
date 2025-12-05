@@ -1,0 +1,2 @@
+# Default SDK configuration adjusted for managed wolfSSL component path
+CONFIG_CUSTOM_SETTING_WOLFSSL_ROOT="/project/managed_components/wolfssl__wolfssl"

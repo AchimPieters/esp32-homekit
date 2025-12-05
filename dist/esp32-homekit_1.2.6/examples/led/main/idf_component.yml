@@ -1,5 +1,0 @@
-dependencies:
-  idf:
-    version: ">=5.0"
-  achimpieters/esp32-homekit:
-    version: "1.0.0"

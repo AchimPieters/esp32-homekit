@@ -1,27 +1,5 @@
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DWOLFSSL_USER_SETTINGS")
 
-set(EXTRA_WOLFSSL_COMPILE_OPTIONS
-    -DWOLFCRYPT_HAVE_SRP
-    -DWOLFSSL_SHA512
-    -DWOLFSSL_BASE64_ENCODE
-    -DNO_MD5
-    -DNO_SHA
-    -DHAVE_HKDF
-    -DHAVE_CHACHA
-    -DHAVE_POLY1305
-    -DHAVE_ED25519
-    -DHAVE_CURVE25519
-    -DNO_SESSION_CACHE
-    -DRSA_LOW_MEM
-    -DGCM_SMALL
-    -DUSE_SLOW_SHA512
-    -DWOLFCRYPT_ONLY
-)
-
-if(CONFIG_HOMEKIT_SMALL)
-    list(APPEND EXTRA_WOLFSSL_COMPILE_OPTIONS -DCURVE25519_SMALL -DED25519_SMALL)
-endif()
-
 idf_component_register(
     SRC_DIRS src
     EXCLUDE_SRCS
@@ -29,7 +7,7 @@ idf_component_register(
         "src/homekit_mdns_debug.c"
     INCLUDE_DIRS "include"
     PRIV_INCLUDE_DIRS "src"
-    REQUIRES wolfssl__wolfssl esp_partition json http_parser spi_flash nvs_flash
+    REQUIRES wolfssl esp_partition json http_parser spi_flash nvs_flash
 )
 
 #if(CONFIG_HOMEKIT_SMALL)
@@ -37,8 +15,6 @@ idf_component_register(
 # endif()
 
 idf_build_set_property(COMPILE_OPTIONS "${EXTRA_WOLFSSL_COMPILE_OPTIONS}" APPEND)
-
-target_compile_options(${COMPONENT_LIB} PRIVATE ${EXTRA_WOLFSSL_COMPILE_OPTIONS})
 
 target_compile_options(${COMPONENT_LIB} PRIVATE
     -Wno-error=unused-variable

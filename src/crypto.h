@@ -3,6 +3,17 @@
 
 #include <stdlib.h>
 
+#include <wolfssl/options.h>
+
+// Ensure the required WolfSSL features are enabled even when build flags are
+// missed by the component manager.
+#ifndef HAVE_ED25519
+#define HAVE_ED25519
+#endif
+#ifndef HAVE_CURVE25519
+#define HAVE_CURVE25519
+#endif
+
 #include <wolfssl/wolfcrypt/ed25519.h>
 #include <wolfssl/wolfcrypt/curve25519.h>
 

@@ -3,7 +3,11 @@
 
 #include <stdlib.h>
 
-#include "wolfssl/options.h"
+// options.h is not present in the IDF-managed wolfSSL component and all
+// options are configured via user_settings.h/settings.h instead.
+// #include "wolfssl/options.h"
+
+#include <wolfssl/wolfcrypt/settings.h>
 
 // Ensure the required WolfSSL features are enabled even when build flags are
 // missed by the component manager.

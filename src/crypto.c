@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdbool.h>
 
 #include <wolfssl/wolfcrypt/settings.h>
 #include <user_settings.h>
@@ -11,6 +12,11 @@
 #include <wolfssl/wolfcrypt/chacha20_poly1305.h>
 #include <wolfssl/wolfcrypt/srp.h>
 #include <wolfssl/wolfcrypt/error-crypt.h>
+#include <wolfssl/wolfcrypt/random.h>
+
+#ifndef HAVE_WC_SETSEED_CB
+WOLFSSL_API void wc_SetSeed_Cb(int (*cb)(byte *output, word32 sz));
+#endif
 
 #include "port.h"
 #include "debug.h"
@@ -89,6 +95,20 @@ Srp *crypto_srp_new() {
         srp->keyGenFunc_cb = wc_SrpSetKeyH;
 
         return srp;
+}
+
+static int crypto_seed_rng(byte *output, word32 sz) {
+        homekit_random_fill(output, sz);
+        return 0;
+}
+
+static void crypto_configure_rng_seed() {
+        static bool seed_cb_initialized = false;
+
+        if (!seed_cb_initialized) {
+                wc_SetSeed_Cb(&crypto_seed_rng);
+                seed_cb_initialized = true;
+        }
 }
 
 
@@ -357,6 +377,7 @@ void crypto_ed25519_free(ed25519_key *key) {
 
 int crypto_ed25519_generate(ed25519_key *key) {
         int r;
+        crypto_configure_rng_seed();
         r = crypto_ed25519_init(key);
         if (r)
                 return r;
@@ -369,12 +390,12 @@ int crypto_ed25519_generate(ed25519_key *key) {
         }
 
         r = wc_ed25519_make_key(&rng, ED25519_KEY_SIZE, key);
-        if (r) {
+        if (r)
                 DEBUG("Failed to generate key (code %d)", r);
-                return r;
-        }
 
-        return 0;
+        wc_FreeRng(&rng);
+
+        return r;
 }
 
 int crypto_ed25519_import_key(ed25519_key *key, const byte *data, size_t size) {
@@ -481,6 +502,7 @@ void crypto_curve25519_done(curve25519_key *key) {
 
 int crypto_curve25519_generate(curve25519_key *key) {
         int r;
+        crypto_configure_rng_seed();
         r = crypto_curve25519_init(key);
         if (r) {
                 return r;
@@ -496,10 +518,13 @@ int crypto_curve25519_generate(curve25519_key *key) {
         r = wc_curve25519_make_key(&rng, 32, key);
         if (r) {
                 crypto_curve25519_done(key);
+                wc_FreeRng(&rng);
                 return r;
         }
 
-        return 0;
+        wc_FreeRng(&rng);
+
+        return r;
 }
 
 

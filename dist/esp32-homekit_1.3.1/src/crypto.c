@@ -13,6 +13,7 @@
 #include <wolfssl/wolfcrypt/srp.h>
 #include <wolfssl/wolfcrypt/error-crypt.h>
 #include <wolfssl/wolfcrypt/random.h>
+#include <wolfssl/wolfcrypt/wc_port.h>
 
 #include "port.h"
 #include "debug.h"

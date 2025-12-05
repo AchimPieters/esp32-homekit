@@ -1,0 +1,25 @@
+dependencies:
+  espressif/mdns:
+    version: ^1.9.1
+  idf:
+    version: '>=5.0'
+  wolfssl/wolfssl:
+    version: ^5.8.2~1
+description: Apple HomeKit Accessory Server Library for IDF V5.x.
+issues: https://github.com/AchimPieters/esp32-homekit/issues
+license: MIT
+maintainers:
+- info@studiopieters.nl
+repository: https://github.com/AchimPieters/esp32-homekit
+targets:
+- esp32
+- esp32c2
+- esp32c3
+- esp32c5
+- esp32c6
+- esp32s2
+- esp32s3
+- esp32h2
+- esp32p4
+url: https://github.com/AchimPieters/esp32-homekit
+version: 1.2.6

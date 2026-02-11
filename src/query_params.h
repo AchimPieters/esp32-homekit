@@ -20,6 +20,8 @@ typedef struct {
 
 int query_param_iterator_init(query_param_iterator_t *it, const char *s, size_t len);
 void query_param_iterator_done(query_param_iterator_t *it);
+// Parser returns raw slices into the input buffer and performs no decoding.
+// Percent-encoding ("%xx") and '+' to space conversion are intentionally not applied.
 bool query_param_iterator_next(query_param_iterator_t *it, query_param_t *param);
 
 #endif // __HOMEKIT_QUERY_PARAMS__

@@ -22,6 +22,7 @@
  **/
 
 #include <stdio.h>
+#include <stdbool.h>
 #include <esp_wifi.h>
 #include <esp_event.h>
 #include <esp_log.h>
@@ -54,6 +55,8 @@ void handle_error(esp_err_t err) {
 }
 
 void on_wifi_ready();
+
+static bool homekit_started = false;
 
 static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
         if (event_base == WIFI_EVENT && (event_id == WIFI_EVENT_STA_START || event_id == WIFI_EVENT_STA_DISCONNECTED)) {
@@ -179,6 +182,12 @@ homekit_server_config_t config = {
 };
 
 void on_wifi_ready() {
+        if (homekit_started) {
+                ESP_LOGI("INFORMATION", "HomeKit server already started, skipping");
+                return;
+        }
+
+        homekit_started = true;
         ESP_LOGI("INFORMATION", "Starting HomeKit server...");
         homekit_server_init(&config);
 }

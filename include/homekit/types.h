@@ -244,8 +244,6 @@ void homekit_characteristic_default_setter_ex(homekit_characteristic_t *ch, home
 // Macro to define accessory
 #define HOMEKIT_ACCESSORY(...) \
         & (homekit_accessory_t) { \
-                .config_number=1, \
-                .category=homekit_accessory_category_other, \
                 ##__VA_ARGS__ \
         }
 

@@ -12,16 +12,17 @@
 #endif
 
 #ifdef HOST_BUILD
-#error "host"
 #include <netinet/ip.h>
 #define PP_HTONS(x) htons(x)
 #define PP_HTONL(x) htonl(x)
-// TODO:
-#define IPADDR4_INIT_BYTES(a, b, c, d)
+#define IPADDR4_INIT_BYTES(a, b, c, d) { .s_addr = htonl(((uint32_t)(a) << 24) | ((uint32_t)(b) << 16) | ((uint32_t)(c) << 8) | (uint32_t)(d)) }
 #endif
 
 #define MDNS_ENABLE_IP4 1
-#define MDNS_ENABLE_IP6 0
+#ifndef HOMEKIT_MDNS_ENABLE_IP6
+#define HOMEKIT_MDNS_ENABLE_IP6 1
+#endif
+#define MDNS_ENABLE_IP6 HOMEKIT_MDNS_ENABLE_IP6
 
 #include <unistd.h>
 
@@ -32,7 +33,7 @@
 #include "homekit_mdns_private.h"
 #include "homekit_mdns.h"
 #include "homekit_mdns_debug.h"
-
+#include "utils.h"
 
 #define LOG(message, ...) printf(message, ## __VA_ARGS__);
 
@@ -51,9 +52,6 @@
 
 
 #define MDNS_BUFFER_SIZE 2000
-
-#define MIN(a, b) ((b) < (a) ? (b) : (a))
-#define MAX(a, b) ((a) < (b) ? (b) : (a))
 
 
 long long get_millis() {
@@ -197,6 +195,8 @@ struct _mdns_server {
         char txt[128];
         uint8_t name_len;   // full name of service
         uint8_t base_name_len; // length of base name, without conflict resolution suffix
+        char name_suffix[7];
+        uint8_t name_suffix_len;
         uint8_t txt_len;
 };
 
@@ -582,10 +582,14 @@ static void mdns_build_probe(mdns_server_t *server) {
         p[9] = 1 + (server->has_addr4 ? 1 : 0) + (server->has_addr6 ? 1 : 0); // 2-3 authrr
         p += MDNS_HEADER_SIZE;
 
-        // A query
+        // A/AAAA query for host name
         p = mdns_write_name(server, p, NAME_HOST, refs);
-        // TODO: pick RR type based on has_addr4 and has_addr6
-        p = mdns_write_query(p, DNS_RRTYPE_ANY, DNS_RRCLASS_IN | DNS_UNICAST_RESPONSE_FLAG);
+        uint16_t host_rrtype = DNS_RRTYPE_ANY;
+        if (server->has_addr4 && !server->has_addr6)
+                host_rrtype = DNS_RRTYPE_A;
+        else if (!server->has_addr4 && server->has_addr6)
+                host_rrtype = DNS_RRTYPE_AAAA;
+        p = mdns_write_query(p, host_rrtype, DNS_RRCLASS_IN | DNS_UNICAST_RESPONSE_FLAG);
 
         // SRV query
         p = mdns_write_name(server, p, NAME_SRV, refs);
@@ -604,7 +608,7 @@ static void mdns_build_probe(mdns_server_t *server) {
 
 
 static void mdns_randomize_name(mdns_server_t *server) {
-        uint8_t len = MIN(server->base_name_len, sizeof(server->name)-6-1);
+        uint8_t len = HOMEKIT_MIN(server->base_name_len, sizeof(server->name)-6-1);
         snprintf(server->name + len, 7, "%02X%02X%02X",
                  random_integer() % 256,
                  random_integer() % 256,
@@ -613,16 +617,34 @@ static void mdns_randomize_name(mdns_server_t *server) {
 }
 
 
-/*
-   static void mdns_save_name_suffix(mdns_server_t *server) {
-    // TODO:
-   }
+static void mdns_save_name_suffix(mdns_server_t *server) {
+        if (server->name_len <= server->base_name_len) {
+                server->name_suffix_len = 0;
+                server->name_suffix[0] = 0;
+                return;
+        }
+
+        size_t suffix_len = server->name_len - server->base_name_len;
+        if (suffix_len > 6)
+                suffix_len = 6;
+
+        memcpy(server->name_suffix, server->name + server->base_name_len, suffix_len);
+        server->name_suffix[suffix_len] = 0;
+        server->name_suffix_len = suffix_len;
+}
 
 
-   static void mdns_load_name_suffix(mdns_server_t *server) {
-    // TODO:
-   }
- */
+static void mdns_load_name_suffix(mdns_server_t *server) {
+        if (!server->name_suffix_len)
+                return;
+
+        if (server->base_name_len + server->name_suffix_len >= sizeof(server->name))
+                return;
+
+        memcpy(server->name + server->base_name_len, server->name_suffix, server->name_suffix_len);
+        server->name_len = server->base_name_len + server->name_suffix_len;
+        server->name[server->name_len] = 0;
+}
 
 
 static void mdns_probe(mdns_server_t *server) {
@@ -940,7 +962,7 @@ static void mdns_server_process_query(mdns_server_t *server, uint8_t *data, uint
                         TickType_t ticks = pdMS_TO_TICKS(20 + random_integer() % 100);
                         if (xTimerIsTimerActive(server->timer)) {
                                 TickType_t remaining_ticks = xTimerGetExpiryTime(server->timer) - xTaskGetTickCount();
-                                ticks = MIN(ticks, remaining_ticks);
+                                ticks = HOMEKIT_MIN(ticks, remaining_ticks);
                         }
 
                         xTimerChangePeriod(server->timer, ticks, portMAX_DELAY);
@@ -1027,8 +1049,7 @@ void mdns_server_run(mdns_server_t *server) {
                         case mdns_command_set_addr4: {
                     #if MDNS_ENABLE_IP4
                                 server->addr4 = command.addr4;
-                                // TODO: check if addr is all empty?
-                                server->has_addr4 = true;
+                                server->has_addr4 = command.addr4.s_addr != INADDR_ANY;
                                 if (server->state == mdns_state_waiting_ip) {
                                         server->state = mdns_state_tentative;
                                         mdns_announce(server);
@@ -1039,8 +1060,8 @@ void mdns_server_run(mdns_server_t *server) {
                         case mdns_command_set_addr6: {
                     #if MDNS_ENABLE_IP6
                                 server->addr6 = command.addr6;
-                                // TODO: check if addr is all empty?
-                                server->has_addr6 = true;
+                                static const struct in6_addr zero_addr6 = IN6ADDR_ANY_INIT;
+                                server->has_addr6 = memcmp(&command.addr6, &zero_addr6, sizeof(command.addr6)) != 0;
                                 if (server->state == mdns_state_waiting_ip) {
                                         server->state = mdns_state_tentative;
                                         mdns_announce(server);
@@ -1061,7 +1082,7 @@ void mdns_server_run(mdns_server_t *server) {
                                 server->name_len = server->base_name_len = strlen(command.name);
                                 free(command.name);
                                 server->state = mdns_state_tentative;
-                                // TODO: mdns_load_name_suffix(server);
+                                mdns_load_name_suffix(server);
                                 break;
                         }
                         case mdns_command_set_txt: {
@@ -1174,11 +1195,9 @@ void mdns_server_run(mdns_server_t *server) {
                                         break;
                                 }
                                 case mdns_state_probe3: {
-                                        /*
-                                           if (server->base_name_len != server->name_len) {
-                                            mdns_save_name_suffix(server);
-                                           }
-                                         */
+                                        if (server->base_name_len != server->name_len) {
+                                                mdns_save_name_suffix(server);
+                                        }
 
                                         LOG_INFO_("Probe successful, announcing %s TXT ", server->name);
                                         mdns_print_pstr((uint8_t*)server->txt, server->txt_len);

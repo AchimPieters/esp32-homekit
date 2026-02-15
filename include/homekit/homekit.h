@@ -3,6 +3,10 @@
 
 #include <homekit/types.h>
 
+#ifndef HOMEKIT_MDNS_PROTOCOL_VERSION
+#define HOMEKIT_MDNS_PROTOCOL_VERSION "1.0"
+#endif
+
 typedef void *homekit_client_id_t;
 
 
@@ -44,6 +48,11 @@ typedef struct {
         void (*on_resource)(const char *body, size_t body_size);
 
         void (*on_event)(homekit_event_t event);
+
+        // Optional HAP protocol version advertised through mDNS TXT key "pv".
+        // Keep this aligned with implemented HAP features.
+        // If NULL, server uses HOMEKIT_MDNS_PROTOCOL_VERSION (defaults to "1.0").
+        const char *protocol_version;
 } homekit_server_config_t;
 
 // Get pairing URI
@@ -55,6 +64,13 @@ void homekit_server_init(homekit_server_config_t *config);
 
 // Reset HomeKit accessory server, removing all pairings
 void homekit_server_reset();
+
+// Notify HomeKit server that accessory database (accessories/services/
+// characteristics metadata) has changed during runtime.
+//
+// This increments HAP configuration number (c#), persists it and refreshes
+// mDNS TXT so controllers can invalidate stale caches.
+void homekit_server_notify_config_changed();
 
 int  homekit_get_accessory_id(char *buffer, size_t size);
 bool homekit_is_paired();

@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include <homekit/tlv.h>
 #include "tlv_internal.h"
@@ -11,6 +12,7 @@ tlv_values_t *tlv_new() {
                 return NULL;
 
         values->head = NULL;
+        values->tail = NULL;
         return values;
 }
 
@@ -40,12 +42,10 @@ int tlv_add_value_(tlv_values_t *values, byte type, byte *value, size_t size) {
 
         if (!values->head) {
                 values->head = tlv;
+                values->tail = tlv;
         } else {
-                tlv_t *t = values->head;
-                while (t->next) {
-                        t = t->next;
-                }
-                t->next = tlv;
+                values->tail->next = tlv;
+                values->tail = tlv;
         }
 
         return 0;
@@ -195,42 +195,54 @@ int tlv_format(const tlv_values_t *values, byte *buffer, size_t *size) {
 
 int tlv_parse(const byte *buffer, size_t length, tlv_values_t *values) {
         size_t i = 0;
+        if (!values->tail && values->head) {
+                values->tail = values->head;
+                while (values->tail->next)
+                        values->tail = values->tail->next;
+        }
+
+        tlv_t *last = values->tail;
+
         while (i < length) {
+                if (i + 1 >= length)
+                        return TLV_ERROR_INVALID_DATA;
+
                 byte type = buffer[i];
-                size_t size = 0;
-                byte *data = NULL;
+                size_t size = buffer[i + 1];
+                i += 2;
 
-                // scan TLVs to accumulate total size of subsequent TLVs with same type (chunked data)
-                size_t j = i;
-                while (j < length && buffer[j] == type && buffer[j+1] == 255) {
-                        size_t chunk_size = buffer[j+1];
-                        size += chunk_size;
-                        j += chunk_size + 2;
-                }
-                if (j < length && buffer[j] == type) {
-                        size_t chunk_size = buffer[j+1];
-                        size += chunk_size;
-                }
+                if (i + size > length)
+                        return TLV_ERROR_INVALID_DATA;
 
-                // allocate memory to hold all pieces of chunked data and copy data there
-                if (size != 0) {
-                        data = malloc(size);
-                        if (!data)
-                                return TLV_ERROR_MEMORY;
+                bool concat_to_last = last && last->type == type;
+                if (!concat_to_last) {
+                        byte *data = NULL;
+                        if (size) {
+                                data = malloc(size);
+                                if (!data)
+                                        return TLV_ERROR_MEMORY;
+                                memcpy(data, &buffer[i], size);
+                        }
 
-                        byte *p = data;
-
-                        size_t remaining = size;
-                        while (remaining) {
-                                size_t chunk_size = buffer[i+1];
-                                memcpy(p, &buffer[i+2], chunk_size);
-                                p += chunk_size;
-                                i += chunk_size + 2;
-                                remaining -= chunk_size;
+                        int r = tlv_add_value_(values, type, data, size);
+                        if (r) {
+                                if (data)
+                                        free(data);
+                                return r;
+                        }
+                        last = values->tail;
+                } else {
+                        if (size) {
+                                byte *new_value = realloc(last->value, last->size + size);
+                                if (!new_value)
+                                        return TLV_ERROR_MEMORY;
+                                memcpy(new_value + last->size, &buffer[i], size);
+                                last->value = new_value;
+                                last->size += size;
                         }
                 }
 
-                tlv_add_value_(values, type, data, size);
+                i += size;
         }
 
         return 0;

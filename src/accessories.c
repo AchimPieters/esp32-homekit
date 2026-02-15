@@ -28,16 +28,46 @@ bool homekit_value_equal(homekit_value_t *a, homekit_value_t *b) {
                 if (!a->tlv_values || !b->tlv_values)
                         return false;
 
-                // TODO: implement order independent comparison?
-                tlv_t *ta = a->tlv_values->head, *tb = b->tlv_values->head;
-                for (; ta && tb; ta=ta->next, tb=tb->next) {
-                        if (ta->type != tb->type || ta->size != tb->size)
+                size_t a_count = 0, b_count = 0;
+                for (tlv_t *ta = a->tlv_values->head; ta; ta = ta->next)
+                        a_count++;
+                for (tlv_t *tb = b->tlv_values->head; tb; tb = tb->next)
+                        b_count++;
+
+                if (a_count != b_count)
+                        return false;
+
+                bool *matched = calloc(b_count, sizeof(bool));
+                if (!matched)
+                        return false;
+
+                for (tlv_t *ta = a->tlv_values->head; ta; ta = ta->next) {
+                        bool found = false;
+
+                        size_t j = 0;
+                        for (tlv_t *tb = b->tlv_values->head; tb; tb = tb->next, j++) {
+                                if (matched[j])
+                                        continue;
+
+                                if (ta->type != tb->type || ta->size != tb->size)
+                                        continue;
+
+                                if (ta->size && memcmp(ta->value, tb->value, ta->size))
+                                        continue;
+
+                                matched[j] = true;
+                                found = true;
+                                break;
+                        }
+
+                        if (!found) {
+                                free(matched);
                                 return false;
-                        if (strncmp((char *)ta->value, (char *)tb->value, ta->size))
-                                return false;
+                        }
                 }
 
-                return (!ta && !tb);
+                free(matched);
+                return true;
         }
         case homekit_format_data:
                 if (!a->data_value && !b->data_value)
@@ -176,6 +206,9 @@ static void *align_pointer(void *ptr) {
 
 
 homekit_characteristic_t* homekit_characteristic_clone(homekit_characteristic_t* ch) {
+        if (!ch || !ch->type)
+                return NULL;
+
         size_t type_len = strlen(ch->type) + 1;
         size_t description_len = ch->description ? strlen(ch->description) + 1 : 0;
 
@@ -204,6 +237,8 @@ homekit_characteristic_t* homekit_characteristic_clone(homekit_characteristic_t*
         }
 
         uint8_t* p = calloc(1, size);
+        if (!p)
+                return NULL;
 
         homekit_characteristic_t* clone = (homekit_characteristic_t*) p;
         p += sizeof(homekit_characteristic_t);
@@ -215,10 +250,14 @@ homekit_characteristic_t* homekit_characteristic_clone(homekit_characteristic_t*
         p[type_len - 1] = 0;
         p += type_len;
 
-        clone->description = (char*) p;
-        strncpy((char*) p, ch->description, description_len);
-        p[description_len - 1] = 0;
-        p += description_len;
+        if (description_len) {
+                clone->description = (char*) p;
+                strncpy((char*) p, ch->description, description_len);
+                p[description_len - 1] = 0;
+                p += description_len;
+        } else {
+                clone->description = NULL;
+        }
 
         p = align_pointer(p);
 

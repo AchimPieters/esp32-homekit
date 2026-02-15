@@ -26,6 +26,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include "constants.h"
 #include "debug.h"
 #include "crypto.h"
@@ -45,6 +46,36 @@
 #define IID_MAP_KEY "iid_map"
 
 static nvs_handle_t homekit_nvs_handle;
+static bool homekit_nvs_opened = false;
+
+static esp_err_t homekit_storage_open() {
+        if (homekit_nvs_opened) {
+                return ESP_OK;
+        }
+
+        esp_err_t err = nvs_flash_init();
+        if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+                ESP_ERROR_CHECK(nvs_flash_erase());
+                err = nvs_flash_init();
+        }
+        if (err == ESP_ERR_NVS_INVALID_STATE) {
+                // NVS is already initialized by the application.
+                err = ESP_OK;
+        }
+        if (err != ESP_OK) {
+                ERROR("Failed to initialize NVS flash: %s", esp_err_to_name(err));
+                return err;
+        }
+
+        err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &homekit_nvs_handle);
+        if (err != ESP_OK) {
+                ERROR("Failed to open NVS handle: %s", esp_err_to_name(err));
+                return err;
+        }
+
+        homekit_nvs_opened = true;
+        return ESP_OK;
+}
 
 typedef struct {
         char magic[4];
@@ -66,7 +97,12 @@ static inline void pairing_key_from_index(int idx, char *key, size_t key_size) {
 }
 
 static esp_err_t homekit_storage_read(const char* key, void *dst, size_t size) {
-        esp_err_t err = nvs_get_blob(homekit_nvs_handle, key, dst, &size);
+        esp_err_t err = homekit_storage_open();
+        if (err != ESP_OK) {
+                return err;
+        }
+
+        err = nvs_get_blob(homekit_nvs_handle, key, dst, &size);
         if (err != ESP_OK) {
                 if (err == ESP_ERR_NVS_NOT_FOUND) {
                         memset(dst, 0, size); // return zeroed buffer if not found
@@ -79,7 +115,12 @@ static esp_err_t homekit_storage_read(const char* key, void *dst, size_t size) {
 }
 
 static esp_err_t homekit_storage_write(const char* key, const void *src, size_t size) {
-        esp_err_t err = nvs_set_blob(homekit_nvs_handle, key, src, size);
+        esp_err_t err = homekit_storage_open();
+        if (err != ESP_OK) {
+                return err;
+        }
+
+        err = nvs_set_blob(homekit_nvs_handle, key, src, size);
         if (err != ESP_OK) {
                 DEBUG("NVS write failed: %s (0x%x)", esp_err_to_name(err), err);
                 return err;
@@ -93,7 +134,12 @@ static esp_err_t homekit_storage_write(const char* key, const void *src, size_t 
 }
 
 static esp_err_t homekit_storage_commit() {
-        esp_err_t err = nvs_commit(homekit_nvs_handle);
+        esp_err_t err = homekit_storage_open();
+        if (err != ESP_OK) {
+                return err;
+        }
+
+        err = nvs_commit(homekit_nvs_handle);
         if (err != ESP_OK) {
                 DEBUG("NVS commit failed: %s (0x%x)", esp_err_to_name(err), err);
                 return err;
@@ -102,16 +148,8 @@ static esp_err_t homekit_storage_commit() {
 }
 
 int homekit_storage_init() {
-        esp_err_t err = nvs_flash_init();
-        if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-                ESP_ERROR_CHECK(nvs_flash_erase());
-                err = nvs_flash_init();
-        }
-        ESP_ERROR_CHECK(err);
-
-        err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &homekit_nvs_handle);
+        esp_err_t err = homekit_storage_open();
         if (err != ESP_OK) {
-                ERROR("Failed to open NVS handle: %s", esp_err_to_name(err));
                 return -1;
         }
 

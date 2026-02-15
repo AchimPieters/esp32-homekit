@@ -31,7 +31,5 @@ elseif(CONFIG_IDF_TARGET STREQUAL "esp32c5")
 endif()
 message(STATUS "Partition table file: ${PARTITION_TABLE_DEFAULT}")
 
-set(COMPONENTS main)
-
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(main)

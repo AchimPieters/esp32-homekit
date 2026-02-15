@@ -1,5 +1,4 @@
 #include <string.h>
-#include <stdbool.h>
 
 #include <wolfssl/wolfcrypt/settings.h>
 #include <user_settings.h>
@@ -170,8 +169,9 @@ int crypto_srp_get_public_key(Srp *srp, byte *buffer, size_t *buffer_size) {
         if (buffer_size == NULL)
                 return -1;
 
-        if (*buffer_size < sizeof(N)) {
-                *buffer_size = sizeof(N);
+        // TODO: Fix hardcoded public key size
+        if (*buffer_size < 384) {
+                *buffer_size = 384;
                 return -2;
         }
 
@@ -350,25 +350,13 @@ ed25519_key *crypto_ed25519_new() {
 }
 
 
-void crypto_ed25519_done(ed25519_key *key) {
-        if (!key)
-                return;
-
-        wc_ed25519_free(key);
-}
-
 void crypto_ed25519_free(ed25519_key *key) {
-        if (!key)
-                return;
-
-        crypto_ed25519_done(key);
-        free(key);
+        if (key)
+                free(key);
 }
 
 int crypto_ed25519_generate(ed25519_key *key) {
         int r;
-        bool rng_initialized = false;
-
         r = crypto_ed25519_init(key);
         if (r)
                 return r;
@@ -379,16 +367,14 @@ int crypto_ed25519_generate(ed25519_key *key) {
                 DEBUG("Failed to initialize RNG (code %d)", r);
                 return r;
         }
-        rng_initialized = true;
 
         r = wc_ed25519_make_key(&rng, ED25519_KEY_SIZE, key);
-        if (r)
+        if (r) {
                 DEBUG("Failed to generate key (code %d)", r);
+                return r;
+        }
 
-        if (rng_initialized)
-                wc_FreeRng(&rng);
-
-        return r;
+        return 0;
 }
 
 int crypto_ed25519_import_key(ed25519_key *key, const byte *data, size_t size) {
@@ -495,8 +481,6 @@ void crypto_curve25519_done(curve25519_key *key) {
 
 int crypto_curve25519_generate(curve25519_key *key) {
         int r;
-        bool rng_initialized = false;
-
         r = crypto_curve25519_init(key);
         if (r) {
                 return r;
@@ -508,16 +492,14 @@ int crypto_curve25519_generate(curve25519_key *key) {
                 DEBUG("Failed to initialize RNG (code %d)", r);
                 return r;
         }
-        rng_initialized = true;
 
         r = wc_curve25519_make_key(&rng, 32, key);
-        if (r)
+        if (r) {
                 crypto_curve25519_done(key);
+                return r;
+        }
 
-        if (rng_initialized)
-                wc_FreeRng(&rng);
-
-        return r;
+        return 0;
 }
 
 

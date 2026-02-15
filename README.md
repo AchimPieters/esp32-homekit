@@ -12,7 +12,7 @@ Ensure you have the necessary software installed before proceeding:
 - Sign in to your Docker account.
 - Pull the latest ESP-IDF version:
   ```sh
-  docker pull espressif/idf:v5.5.2
+  docker pull espressif/idf:v5.3
   ```
 
 #### Python Installation
@@ -49,7 +49,7 @@ git clone --recursive https://github.com/AchimPieters/esp32-homekit-demo.git
 
 ### 2. Set Up Docker Environment
 ```sh
-docker run -it -v ~/esp32-homekit-demo:/project -w /project espressif/idf:v5.5.2
+docker run -it -v ~/esp32-homekit-demo:/project -w /project espressif/idf:v5.3
 ```
 
 ### 3. Configuration
@@ -114,7 +114,6 @@ homekit_server_config_t config = {
      .accessories = accessories,
      .password = "123-45-678",
      .setupId = "1QJ8",
-     .protocol_version = "1.0", // optional: mDNS TXT key "pv"
 };
 ```
 
@@ -135,16 +134,6 @@ tools/gen_qrcode 5 123-45-678 1QJ8 qrcode.png
 - `qrcode.png`: Output file
 
 ---
-
-
-## Pair-Setup rate limiting
-Pair-Setup throttling uses a single windowed mechanism:
-- Max attempts in window: `HOMEKIT_PAIR_SETUP_MAX_TRIES`
-- Attempt window: `HOMEKIT_PAIR_SETUP_WINDOW_MS`
-- Cooldown after limit hit: `HOMEKIT_PAIR_SETUP_COOLDOWN_MS`
-
-Failed attempts (for example invalid PIN/SRP proof failures or encrypted payload failures) count towards the limit.
-Parallel Pair-Setup sessions are rejected while another client owns an active Pair-Setup flow.
 
 ## HomeKit Accessory Categories
 | Category              | Number |

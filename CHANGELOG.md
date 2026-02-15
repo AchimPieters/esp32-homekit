@@ -1,3 +1,7 @@
+## [1.3.8] - 2026-15-02
+- Remove GCC pragma for override-init warnings
+- Updated espressif/mdns to 1.9.1
+
 ## [1.2.5] - 2025-06-11
 
 ### Added

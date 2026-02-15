@@ -3,7 +3,6 @@
 
 #define TLV_ERROR_MEMORY -1
 #define TLV_ERROR_INSUFFICIENT_SIZE -2
-#define TLV_ERROR_INVALID_DATA -3
 
 typedef unsigned char byte;
 
@@ -17,7 +16,6 @@ typedef struct _tlv {
 
 typedef struct {
         tlv_t *head;
-        tlv_t *tail;
 } tlv_values_t;
 
 

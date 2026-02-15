@@ -1,10 +1,3 @@
-## [1.3.4] - 2026-02-10
-
-### Changed
-- Raised the minimum ESP-IDF requirement to `>=5.5.2` for the component and LED example.
-- Updated setup documentation to use ESP-IDF Docker image `v5.5.2`.
-- Updated `wolfssl/wolfssl` to `5.8.2~1` to resolve ESP32 build failures introduced by ESP-TEE checks in 5.8.0.
-
 ## [1.2.5] - 2025-06-11
 
 ### Added

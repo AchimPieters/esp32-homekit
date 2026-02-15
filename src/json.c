@@ -1,16 +1,15 @@
 #include <stdint.h>
 #include <stdio.h>
-#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
 #include "json.h"
 #include "debug.h"
-#include "utils.h"
 
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
 #define DEBUG_STATE(json) \
         DEBUG("State = %d, last JSON output: %s", \
-              json->state, json->buffer + HOMEKIT_MAX(0, (long int)json->pos - 20));
+              json->state, json->buffer + MAX(0, (long int)json->pos - 20));
 
 
 void json_init(json_stream *json, uint8_t *buffer, size_t size, json_flush_callback on_flush, void *context) {
@@ -189,27 +188,27 @@ void json_array_end(json_stream *json) {
         }
 }
 
-static inline void json_write_number(json_stream *json, const char *value, size_t len) {
-        json_write(json, value, len);
-}
-
 void _json_number(json_stream *json, const char *value, size_t len) {
         if (json->state == JSON_STATE_ERROR)
                 return;
 
+        void _do_write() {
+                json_write(json, value, len);
+        }
+
         switch (json->state) {
         case JSON_STATE_START:
-                json_write_number(json, value, len);
+                _do_write();
                 json->state = JSON_STATE_END;
                 break;
         case JSON_STATE_ARRAY_ITEM:
                 json_put(json, ',');
         case JSON_STATE_ARRAY:
-                json_write_number(json, value, len);
+                _do_write();
                 json->state = JSON_STATE_ARRAY_ITEM;
                 break;
         case JSON_STATE_OBJECT_KEY:
-                json_write_number(json, value, len);
+                _do_write();
                 json->state = JSON_STATE_OBJECT_VALUE;
                 break;
         default:
@@ -236,7 +235,7 @@ void json_uint16(json_stream *json, uint16_t x) {
 
 void json_uint32(json_stream *json, uint32_t x) {
         char buffer[11];
-        size_t len = snprintf(buffer, sizeof(buffer), "%" PRIu32, x);
+        size_t len = snprintf(buffer, sizeof(buffer), "%lu", x);
 
         _json_number(json, buffer, len);
 }
@@ -250,11 +249,11 @@ void json_uint64(json_stream *json, uint64_t x) {
                 *(--b) = '0' + (x % 10);
         } while (x /= 10);
 
-        _json_number(json, b, &buffer[20] - b);
+        _json_number(json, b, b - &buffer[20]);
 }
 
 void json_integer(json_stream *json, int x) {
-        char buffer[16];
+        char buffer[7];
         size_t len = snprintf(buffer, sizeof(buffer), "%d", x);
 
         _json_number(json, buffer, len);
@@ -272,41 +271,9 @@ void json_string(json_stream *json, const char *x) {
                 return;
 
         void _do_write() {
+                // TODO: escape string
                 json_put(json, '"');
-                while (*x) {
-                        unsigned char c = *x++;
-                        switch (c) {
-                        case '"':
-                                json_write(json, "\\\"", 2);
-                                break;
-                        case '\\':
-                                json_write(json, "\\\\", 2);
-                                break;
-                        case '\b':
-                                json_write(json, "\\b", 2);
-                                break;
-                        case '\f':
-                                json_write(json, "\\f", 2);
-                                break;
-                        case '\n':
-                                json_write(json, "\\n", 2);
-                                break;
-                        case '\r':
-                                json_write(json, "\\r", 2);
-                                break;
-                        case '\t':
-                                json_write(json, "\\t", 2);
-                                break;
-                        default:
-                                if (c < 0x20) {
-                                        char escaped[7];
-                                        int len = snprintf(escaped, sizeof(escaped), "\\u%04x", c);
-                                        json_write(json, escaped, len);
-                                } else {
-                                        json_put(json, c);
-                                }
-                        }
-                }
+                json_write(json, x, strlen(x));
                 json_put(json, '"');
         }
 

@@ -16,9 +16,6 @@ void query_param_iterator_done(query_param_iterator_t *it) {
 }
 
 bool query_param_iterator_next(query_param_iterator_t *it, query_param_t *param) {
-        while (it->pos < it->len && it->data[it->pos] == '&')
-                it->pos++;
-
         if (it->pos >= it->len || it->data[it->pos] == '#')
                 return false;
 
@@ -52,9 +49,6 @@ bool query_param_iterator_next(query_param_iterator_t *it, query_param_t *param)
                         param->value_len = it->pos - pos;
                 }
         }
-
-        while (it->pos < it->len && it->data[it->pos] == '&')
-                it->pos++;
 
         return true;
 }

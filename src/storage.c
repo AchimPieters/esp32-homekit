@@ -25,7 +25,6 @@
 
 #include <string.h>
 #include <ctype.h>
-#include <stdint.h>
 #include "constants.h"
 #include "debug.h"
 #include "crypto.h"
@@ -41,8 +40,6 @@
 #define PAIRING_KEY_PREFIX "pairing_"
 #define PAIRING_KEY_MAX_LEN (sizeof(PAIRING_KEY_PREFIX) + 10 + 1) // 10 for maximum int32 + 1 for null terminator
 #define ACCESSORY_KEY_SIZE 64
-#define CONFIG_STATE_KEY "config_state"
-#define IID_MAP_KEY "iid_map"
 
 static nvs_handle_t homekit_nvs_handle;
 
@@ -54,51 +51,33 @@ typedef struct {
         uint8_t _reserved[7]; // Padding for alignment
 } pairing_data_t;
 
-typedef struct {
-        uint32_t config_hash;
-        uint32_t config_number;
-} config_state_data_t;
-
 // Implement the storage functions
 
-static inline void pairing_key_from_index(int idx, char *key, size_t key_size) {
-        snprintf(key, key_size, PAIRING_KEY_PREFIX "%d", idx);
-}
-
-static esp_err_t homekit_storage_read(const char* key, void *dst, size_t size) {
+static int homekit_storage_read(const char* key, void *dst, size_t size) {
         esp_err_t err = nvs_get_blob(homekit_nvs_handle, key, dst, &size);
         if (err != ESP_OK) {
                 if (err == ESP_ERR_NVS_NOT_FOUND) {
                         memset(dst, 0, size); // return zeroed buffer if not found
                 } else {
                         DEBUG("NVS read failed: %s (0x%x)", esp_err_to_name(err), err);
-                        return err;
+                        return -1;
                 }
         }
-        return ESP_OK;
+        return 0;
 }
 
-static esp_err_t homekit_storage_write(const char* key, const void *src, size_t size) {
+static int homekit_storage_write(const char* key, void *src, size_t size) {
         esp_err_t err = nvs_set_blob(homekit_nvs_handle, key, src, size);
         if (err != ESP_OK) {
                 DEBUG("NVS write failed: %s (0x%x)", esp_err_to_name(err), err);
-                return err;
+                return -1;
         }
         err = nvs_commit(homekit_nvs_handle);
         if (err != ESP_OK) {
                 DEBUG("NVS commit failed: %s (0x%x)", esp_err_to_name(err), err);
-                return err;
+                return -1;
         }
-        return ESP_OK;
-}
-
-static esp_err_t homekit_storage_commit() {
-        esp_err_t err = nvs_commit(homekit_nvs_handle);
-        if (err != ESP_OK) {
-                DEBUG("NVS commit failed: %s (0x%x)", esp_err_to_name(err), err);
-                return err;
-        }
-        return ESP_OK;
+        return 0;
 }
 
 int homekit_storage_init() {
@@ -116,14 +95,14 @@ int homekit_storage_init() {
         }
 
         char magic[sizeof("HAP")];
-        if (homekit_storage_read("magic", (byte *)magic, sizeof(magic)) != ESP_OK) {
+        if (homekit_storage_read("magic", (byte *)magic, sizeof(magic))) {
                 ERROR("Failed to read HomeKit storage magic");
         }
 
         if (strncmp(magic, "HAP", sizeof(magic)) != 0) {
                 INFO("Formatting HomeKit storage");
                 strncpy(magic, "HAP", sizeof(magic));
-                if (homekit_storage_write("magic", (byte *)magic, sizeof(magic)) != ESP_OK) {
+                if (homekit_storage_write("magic", (byte *)magic, sizeof(magic))) {
                         ERROR("Failed to write HomeKit storage magic");
                         return -1;
                 }
@@ -143,75 +122,11 @@ int homekit_storage_reset() {
         return homekit_storage_init();
 }
 
-int homekit_storage_save_config_state(uint32_t config_hash, uint32_t config_number) {
-        config_state_data_t data = {
-                .config_hash = config_hash,
-                .config_number = config_number,
-        };
-
-        return (homekit_storage_write(CONFIG_STATE_KEY, &data, sizeof(data)) == ESP_OK) ? 0 : -1;
-}
-
-int homekit_storage_load_config_state(uint32_t *config_hash, uint32_t *config_number) {
-        config_state_data_t data = {0};
-        esp_err_t err = homekit_storage_read(CONFIG_STATE_KEY, &data, sizeof(data));
-        if (err != ESP_OK)
-                return -1;
-
-        if (config_hash)
-                *config_hash = data.config_hash;
-        if (config_number)
-                *config_number = data.config_number;
-
-        return 0;
-}
-
-int homekit_storage_save_iid_map(const void *data, size_t size) {
-        return (homekit_storage_write(IID_MAP_KEY, data, size) == ESP_OK) ? 0 : -1;
-}
-
-int homekit_storage_load_iid_map(void *data, size_t *size) {
-        esp_err_t err = nvs_get_blob(homekit_nvs_handle, IID_MAP_KEY, data, size);
-        if (err == ESP_ERR_NVS_NOT_FOUND)
-                return 1;
-        if (err != ESP_OK) {
-                ERROR("Failed to read IID map from HomeKit storage: %s", esp_err_to_name(err));
-                return -1;
-        }
-
-        return 0;
-}
-
-int homekit_storage_pairing_count() {
-        pairing_data_t data;
-        int count = 0;
-
-        for (int i = 0; i < MAX_PAIRINGS; i++) {
-                char key[PAIRING_KEY_MAX_LEN];
-                pairing_key_from_index(i, key, sizeof(key));
-
-                size_t size = sizeof(data);
-                esp_err_t err = nvs_get_blob(homekit_nvs_handle, key, &data, &size);
-                if (err == ESP_ERR_NVS_NOT_FOUND) {
-                        continue;
-                }
-                if (err != ESP_OK) {
-                        ERROR("Failed to read pairing %d from HomeKit storage: %s", i, esp_err_to_name(err));
-                        return -1;
-                }
-
-                if (strncmp(data.magic, "HAP", sizeof(data.magic)) == 0)
-                        count++;
-        }
-
-        return count;
-}
-
 int homekit_storage_find_pairing(const char *device_id, pairing_t *pairing) {
         pairing_data_t data;
         for (int i = 0; i < MAX_PAIRINGS; i++) {
                 char key[PAIRING_KEY_MAX_LEN];
-                pairing_key_from_index(i, key, sizeof(key));
+                snprintf(key, sizeof(key), PAIRING_KEY_PREFIX "%d", i);
 
                 size_t size = sizeof(data);
                 esp_err_t err = nvs_get_blob(homekit_nvs_handle, key, &data, &size);
@@ -251,24 +166,9 @@ int homekit_storage_add_pairing(const char *device_id, const ed25519_key *device
                 return -1;
         }
 
-        pairing_t existing_pairing;
-        if (homekit_storage_find_pairing(device_id, &existing_pairing) == 0) {
-                crypto_ed25519_done(&existing_pairing.device_key);
-                char key[PAIRING_KEY_MAX_LEN];
-                pairing_key_from_index(existing_pairing.id, key, sizeof(key));
-
-                esp_err_t err = nvs_set_blob(homekit_nvs_handle, key, &data, sizeof(data));
-                if (err != ESP_OK) {
-                        ERROR("Failed to update existing pairing in HomeKit storage: %s", esp_err_to_name(err));
-                        return -1;
-                }
-
-                return (homekit_storage_commit() == ESP_OK) ? 0 : -1;
-        }
-
         for (int i = 0; i < MAX_PAIRINGS; i++) {
                 char key[PAIRING_KEY_MAX_LEN];
-                pairing_key_from_index(i, key, sizeof(key));
+                snprintf(key, sizeof(key), PAIRING_KEY_PREFIX "%d", i);
 
                 size_t size = sizeof(data);
                 esp_err_t err = nvs_get_blob(homekit_nvs_handle, key, NULL, &size); //don't read data, only detect empty slot
@@ -279,7 +179,8 @@ int homekit_storage_add_pairing(const char *device_id, const ed25519_key *device
                                 ERROR("Failed to write pairing data to HomeKit storage: %s", esp_err_to_name(err));
                                 return -1;
                         }
-                        return (homekit_storage_commit() == ESP_OK) ? 0 : -1;
+                        nvs_commit(homekit_nvs_handle);
+                        return 0;
                 }
         }
         return -1;
@@ -289,7 +190,7 @@ int homekit_storage_update_pairing(const char *device_id, uint8_t permissions) {
         pairing_data_t data;
         for (int i = 0; i < MAX_PAIRINGS; i++) {
                 char key[PAIRING_KEY_MAX_LEN];
-                pairing_key_from_index(i, key, sizeof(key));
+                snprintf(key, sizeof(key), PAIRING_KEY_PREFIX "%d", i);
 
                 size_t size = sizeof(data);
                 esp_err_t err = nvs_get_blob(homekit_nvs_handle, key, &data, &size);
@@ -307,7 +208,8 @@ int homekit_storage_update_pairing(const char *device_id, uint8_t permissions) {
                                 ERROR("Failed to update pairing data in HomeKit storage: %s", esp_err_to_name(err));
                                 return -1;
                         }
-                        return (homekit_storage_commit() == ESP_OK) ? 0 : -1;
+                        nvs_commit(homekit_nvs_handle);
+                        return 0;
                 }
         }
         return -1;
@@ -317,7 +219,7 @@ int homekit_storage_can_add_pairing() {
         pairing_data_t data;
         for (int i = 0; i < MAX_PAIRINGS; i++) {
                 char key[PAIRING_KEY_MAX_LEN];
-                pairing_key_from_index(i, key, sizeof(key));
+                snprintf(key, sizeof(key), PAIRING_KEY_PREFIX "%d", i);
 
                 size_t size = sizeof(data);
                 esp_err_t err = nvs_get_blob(homekit_nvs_handle, key, &data, &size);
@@ -331,9 +233,9 @@ int homekit_storage_can_add_pairing() {
 int homekit_storage_remove_pairing(const char *device_id) {
         pairing_data_t data;
         bool found=false;
-        for (int i = 0; i < MAX_PAIRINGS; i++) {
+        for (int i = 0; i < MAX_PAIRINGS; i++) { //scan ALL slots, due to bug in old code, device_id can exist more than once
                 char key[PAIRING_KEY_MAX_LEN];
-                pairing_key_from_index(i, key, sizeof(key));
+                snprintf(key, sizeof(key), PAIRING_KEY_PREFIX "%d", i);
 
                 size_t size = sizeof(data);
                 esp_err_t err = nvs_get_blob(homekit_nvs_handle, key, &data, &size);
@@ -345,12 +247,6 @@ int homekit_storage_remove_pairing(const char *device_id) {
                 }
 
                 if (strncmp(data.magic, "HAP", sizeof(data.magic)) == 0 && strncmp(data.device_id, device_id, DEVICE_ID_SIZE) == 0) {
-                        pairing_data_t erased = {0};
-                        err = nvs_set_blob(homekit_nvs_handle, key, &erased, sizeof(erased));
-                        if (err != ESP_OK) {
-                                ERROR("Failed to overwrite pairing in HomeKit storage: %s", esp_err_to_name(err));
-                                return -1;
-                        }
                         err = nvs_erase_key(homekit_nvs_handle, key);
                         if (err != ESP_OK) {
                                 ERROR("Failed to remove pairing from HomeKit storage: %s", esp_err_to_name(err));
@@ -360,7 +256,8 @@ int homekit_storage_remove_pairing(const char *device_id) {
                 }
         }
         if (found) {
-                return homekit_storage_commit();
+                nvs_commit(homekit_nvs_handle);
+                return 0;
         } else {
                 return -1;
         }
@@ -378,7 +275,7 @@ int homekit_storage_next_pairing(pairing_iterator_t *it, pairing_t *pairing) {
         pairing_data_t data;
         while (it->idx < MAX_PAIRINGS) {
                 char key[PAIRING_KEY_MAX_LEN];
-                pairing_key_from_index(it->idx++, key, sizeof(key));
+                snprintf(key, sizeof(key), PAIRING_KEY_PREFIX "%d", it->idx++);
 
                 size_t size = sizeof(data);
                 esp_err_t err = nvs_get_blob(homekit_nvs_handle, key, &data, &size);
@@ -408,7 +305,7 @@ int homekit_storage_next_pairing(pairing_iterator_t *it, pairing_t *pairing) {
 // Missing functions: Save and Load Accessory ID and Key
 
 int homekit_storage_save_accessory_id(const char *accessory_id) {
-        esp_err_t err = homekit_storage_write("accessory_id", accessory_id, ACCESSORY_ID_SIZE);
+        esp_err_t err = homekit_storage_write("accessory_id", (void *)accessory_id, ACCESSORY_ID_SIZE);
         if (err != ESP_OK) {
                 ERROR("Failed to save accessory ID: %s", esp_err_to_name(err));
                 return -1;
@@ -417,7 +314,7 @@ int homekit_storage_save_accessory_id(const char *accessory_id) {
 }
 
 int homekit_storage_load_accessory_id(char *accessory_id) {
-        esp_err_t err = homekit_storage_read("accessory_id", accessory_id, ACCESSORY_ID_SIZE);
+        esp_err_t err = homekit_storage_read("accessory_id", (void *)accessory_id, ACCESSORY_ID_SIZE);
         accessory_id[ACCESSORY_ID_SIZE]=0;
         if (err != ESP_OK) {
                 ERROR("Failed to load accessory ID: %s", esp_err_to_name(err));
@@ -439,7 +336,7 @@ int homekit_storage_save_accessory_key(const ed25519_key *key) {
         esp_err_t err = homekit_storage_write("accessory_key", key_data, key_data_size);
         if (err != ESP_OK) {
                 ERROR("Failed to save accessory key: %s", esp_err_to_name(err));
-                return -1;
+                return -2;
         }
         return 0;
 }

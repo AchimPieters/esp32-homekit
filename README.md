@@ -12,7 +12,7 @@ Ensure you have the necessary software installed before proceeding:
 - Sign in to your Docker account.
 - Pull the latest ESP-IDF version:
   ```sh
-  docker pull espressif/idf:v5.3
+  docker pull espressif/idf:v5.5.2
   ```
 
 #### Python Installation
@@ -40,6 +40,10 @@ pip3 install esptool
 
 ---
 
+
+## Upgrading to esp32-homekit 1.3.7
+Before upgrading from 1.3.3 (or earlier), follow the migration checklist in [`UPGRADE_1.3.7.md`](UPGRADE_1.3.7.md).
+
 ## Getting Started with ESP32 HomeKit - LED
 
 ### 1. Clone the Repository
@@ -49,7 +53,7 @@ git clone --recursive https://github.com/AchimPieters/esp32-homekit-demo.git
 
 ### 2. Set Up Docker Environment
 ```sh
-docker run -it -v ~/esp32-homekit-demo:/project -w /project espressif/idf:v5.3
+docker run -it -v ~/esp32-homekit-demo:/project -w /project espressif/idf:v5.5.2
 ```
 
 ### 3. Configuration

@@ -1,6 +1,8 @@
 ## [1.3.8] - 2026-15-02
 - Remove GCC pragma for override-init warnings
 - Updated espressif/mdns to 1.9.1
+- Make HAP setup payload transport flags configurable via `HOMEKIT_SETUP_PAYLOAD_FLAGS`
+- Update advertised HAP mDNS protocol version default to `1.1` via `HOMEKIT_MDNS_PROTOCOL_VERSION`
 
 ## [1.2.5] - 2025-06-11
 

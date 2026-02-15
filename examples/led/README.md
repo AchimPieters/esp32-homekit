@@ -21,7 +21,7 @@ Connect `LED` pin to the following pin:
 - **idf version:** `>=5.0`
 - **espressif/mdns version:** `1.8.2`
 - **wolfssl/wolfssl version:** `5.8.0`
-- **esp32-homekit:** gebruikt de lokale repository via `path: ../../..` in `main/idf_component.yml`.
+- **achimpieters/esp32-homekit version:** `1.0.0`
 
 ## Notes
 

@@ -22,7 +22,6 @@
  **/
 
 #include <stdio.h>
-#include <stdbool.h>
 #include <esp_wifi.h>
 #include <esp_event.h>
 #include <esp_log.h>
@@ -55,8 +54,6 @@ void handle_error(esp_err_t err) {
 }
 
 void on_wifi_ready();
-
-static bool homekit_started = false;
 
 static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
         if (event_base == WIFI_EVENT && (event_id == WIFI_EVENT_STA_START || event_id == WIFI_EVENT_STA_DISCONNECTED)) {
@@ -154,8 +151,10 @@ homekit_characteristic_t serial = HOMEKIT_CHARACTERISTIC_(SERIAL_NUMBER, DEVICE_
 homekit_characteristic_t model = HOMEKIT_CHARACTERISTIC_(MODEL, DEVICE_MODEL);
 homekit_characteristic_t revision = HOMEKIT_CHARACTERISTIC_(FIRMWARE_REVISION, FW_VERSION);
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Woverride-init"
 homekit_accessory_t *accessories[] = {
-        HOMEKIT_ACCESSORY(.id = 1, .category = homekit_accessory_category_light, .services = (homekit_service_t*[]) {
+        HOMEKIT_ACCESSORY(.id = 1, .category = homekit_accessory_category_lighting, .services = (homekit_service_t*[]) {
                 HOMEKIT_SERVICE(ACCESSORY_INFORMATION, .characteristics = (homekit_characteristic_t*[]) {
                         &name,
                         &manufacturer,
@@ -174,6 +173,7 @@ homekit_accessory_t *accessories[] = {
         }),
         NULL
 };
+#pragma GCC diagnostic pop
 
 homekit_server_config_t config = {
         .accessories = accessories,
@@ -182,12 +182,6 @@ homekit_server_config_t config = {
 };
 
 void on_wifi_ready() {
-        if (homekit_started) {
-                ESP_LOGI("INFORMATION", "HomeKit server already started, skipping");
-                return;
-        }
-
-        homekit_started = true;
         ESP_LOGI("INFORMATION", "Starting HomeKit server...");
         homekit_server_init(&config);
 }

@@ -1,5 +1,5 @@
 dependencies:
   idf:
     version: ">=5.0"
-  esp32-homekit:
-    path: ../../..
+  achimpieters/esp32-homekit:
+    version: "1.3.7"

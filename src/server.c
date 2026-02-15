@@ -4567,21 +4567,9 @@ static void homekit_server_mdns_refresh(homekit_server_t *server, bool bump_conf
          homekit_server_t *server = args;
          INFO("Starting server");
 
-         if (homekit_storage_init() < 0) {
-                 ERROR("Failed to initialize HomeKit storage");
-                 vTaskDelete(NULL);
-                 return;
-         }
+         int r = homekit_storage_init();
 
-         if (homekit_storage_load_accessory_id(server->accessory_id) ||
-             homekit_storage_load_accessory_key(&server->accessory_key)) {
-                 if (homekit_storage_pairing_count() > 0) {
-                         ERROR("Accessory identity data missing or corrupted; aborting startup to preserve pairing identity");
-                         vTaskDelete(NULL);
-                         return;
-                 }
-
-                 INFO("Generating new accessory identity");
+         if (r == 1) {
                  homekit_accessory_id_generate(server->accessory_id);
                  if (homekit_storage_save_accessory_id(server->accessory_id)) {
                          ERROR("Failed to persist generated accessory ID");
@@ -4595,8 +4583,18 @@ static void homekit_server_mdns_refresh(homekit_server_t *server, bool bump_conf
                          vTaskDelete(NULL);
                          return;
                  }
-         } else {
+         } else if (r == 0) {
+                 if (homekit_storage_load_accessory_id(server->accessory_id) ||
+                     homekit_storage_load_accessory_key(&server->accessory_key)) {
+                         ERROR("Accessory identity data missing or corrupted; aborting startup to preserve pairing identity");
+                         vTaskDelete(NULL);
+                         return;
+                 }
                  INFO("Using existing accessory ID: %s", server->accessory_id);
+         } else {
+                 ERROR("Failed to initialize HomeKit storage");
+                 vTaskDelete(NULL);
+                 return;
          }
 
          pairing_iterator_t pairing_it;

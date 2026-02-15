@@ -26,7 +26,6 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdint.h>
-#include <stdbool.h>
 #include "constants.h"
 #include "debug.h"
 #include "crypto.h"
@@ -46,7 +45,6 @@
 #define IID_MAP_KEY "iid_map"
 
 static nvs_handle_t homekit_nvs_handle;
-static bool homekit_storage_ready = false;
 
 typedef struct {
         char magic[4];
@@ -67,16 +65,7 @@ static inline void pairing_key_from_index(int idx, char *key, size_t key_size) {
         snprintf(key, key_size, PAIRING_KEY_PREFIX "%d", idx);
 }
 
-static inline bool homekit_storage_is_ready() {
-        return homekit_storage_ready;
-}
-
 static esp_err_t homekit_storage_read(const char* key, void *dst, size_t size) {
-        if (!homekit_storage_is_ready()) {
-                DEBUG("NVS read skipped: storage not initialized");
-                return ESP_ERR_INVALID_STATE;
-        }
-
         esp_err_t err = nvs_get_blob(homekit_nvs_handle, key, dst, &size);
         if (err != ESP_OK) {
                 if (err == ESP_ERR_NVS_NOT_FOUND) {
@@ -90,11 +79,6 @@ static esp_err_t homekit_storage_read(const char* key, void *dst, size_t size) {
 }
 
 static esp_err_t homekit_storage_write(const char* key, const void *src, size_t size) {
-        if (!homekit_storage_is_ready()) {
-                DEBUG("NVS write skipped: storage not initialized");
-                return ESP_ERR_INVALID_STATE;
-        }
-
         esp_err_t err = nvs_set_blob(homekit_nvs_handle, key, src, size);
         if (err != ESP_OK) {
                 DEBUG("NVS write failed: %s (0x%x)", esp_err_to_name(err), err);
@@ -109,11 +93,6 @@ static esp_err_t homekit_storage_write(const char* key, const void *src, size_t 
 }
 
 static esp_err_t homekit_storage_commit() {
-        if (!homekit_storage_is_ready()) {
-                DEBUG("NVS commit skipped: storage not initialized");
-                return ESP_ERR_INVALID_STATE;
-        }
-
         esp_err_t err = nvs_commit(homekit_nvs_handle);
         if (err != ESP_OK) {
                 DEBUG("NVS commit failed: %s (0x%x)", esp_err_to_name(err), err);
@@ -123,10 +102,6 @@ static esp_err_t homekit_storage_commit() {
 }
 
 int homekit_storage_init() {
-        if (homekit_storage_is_ready()) {
-                return 0;
-        }
-
         esp_err_t err = nvs_flash_init();
         if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
                 ESP_ERROR_CHECK(nvs_flash_erase());
@@ -140,9 +115,7 @@ int homekit_storage_init() {
                 return -1;
         }
 
-        homekit_storage_ready = true;
-
-        char magic[sizeof("HAP")] = {0};
+        char magic[sizeof("HAP")];
         if (homekit_storage_read("magic", (byte *)magic, sizeof(magic)) != ESP_OK) {
                 ERROR("Failed to read HomeKit storage magic");
         }
@@ -152,7 +125,6 @@ int homekit_storage_init() {
                 strncpy(magic, "HAP", sizeof(magic));
                 if (homekit_storage_write("magic", (byte *)magic, sizeof(magic)) != ESP_OK) {
                         ERROR("Failed to write HomeKit storage magic");
-                        homekit_storage_ready = false;
                         return -1;
                 }
                 return 1;
@@ -162,17 +134,12 @@ int homekit_storage_init() {
 }
 
 int homekit_storage_reset() {
-        if (!homekit_storage_is_ready()) {
-                return homekit_storage_init();
-        }
-
         esp_err_t err = nvs_erase_all(homekit_nvs_handle);
         if (err != ESP_OK) {
                 ERROR("Failed to reset HomeKit storage");
                 return -1;
         }
 
-        homekit_storage_ready = false;
         return homekit_storage_init();
 }
 
@@ -204,10 +171,6 @@ int homekit_storage_save_iid_map(const void *data, size_t size) {
 }
 
 int homekit_storage_load_iid_map(void *data, size_t *size) {
-        if (!homekit_storage_is_ready()) {
-                return -1;
-        }
-
         esp_err_t err = nvs_get_blob(homekit_nvs_handle, IID_MAP_KEY, data, size);
         if (err == ESP_ERR_NVS_NOT_FOUND)
                 return 1;

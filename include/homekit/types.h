@@ -43,8 +43,6 @@ typedef enum {
         homekit_accessory_category_fan = 3,
         homekit_accessory_category_garage_door_opener = 4,
         homekit_accessory_category_light = 5,
-        // Backward-compatible alias used by some examples/projects.
-        homekit_accessory_category_lighting = homekit_accessory_category_light,
         homekit_accessory_category_lock = 6,
         homekit_accessory_category_outlet = 7,
         homekit_accessory_category_switch = 8,

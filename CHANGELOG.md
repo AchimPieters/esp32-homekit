@@ -1,4 +1,4 @@
-## [Unreleased]
+## [1.3.9]
 
 ### Added
 - Added missing HAP accessory categories for HomePod (25), Router (33), Audio Receiver (34), TV Set-Top Box (35), and TV Streaming Stick (36).

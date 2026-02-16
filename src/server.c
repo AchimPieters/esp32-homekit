@@ -76,11 +76,21 @@
 #define HOMEKIT_MAX_CLIENTS 16
 #endif
 
-#ifndef HOMEKIT_MDNS_PROTOCOL_VERSION
+#ifdef CONFIG_HOMEKIT_MDNS_PROTOCOL_VERSION
+#define HOMEKIT_MDNS_PROTOCOL_VERSION CONFIG_HOMEKIT_MDNS_PROTOCOL_VERSION
+#else
 #define HOMEKIT_MDNS_PROTOCOL_VERSION "1.1"
 #endif
 
-#ifndef HOMEKIT_SETUP_PAYLOAD_FLAGS
+#ifdef CONFIG_HOMEKIT_MDNS_FEATURE_FLAGS
+#define HOMEKIT_MDNS_FEATURE_FLAGS CONFIG_HOMEKIT_MDNS_FEATURE_FLAGS
+#else
+#define HOMEKIT_MDNS_FEATURE_FLAGS 0
+#endif
+
+#ifdef CONFIG_HOMEKIT_SETUP_PAYLOAD_FLAGS
+#define HOMEKIT_SETUP_PAYLOAD_FLAGS CONFIG_HOMEKIT_SETUP_PAYLOAD_FLAGS
+#else
 #define HOMEKIT_SETUP_PAYLOAD_FLAGS 2
 #endif
 
@@ -4082,7 +4092,7 @@
          // feature flags (required if non-zero)
          //   bit 0 - supports HAP pairing. required for all HomeKit accessories
          //   bits 1-7 - reserved
-         homekit_mdns_add_txt("ff", "0");
+         homekit_mdns_add_txt("ff", "%d", HOMEKIT_MDNS_FEATURE_FLAGS & 0xff);
          // status flags
          //   bit 0 - not paired
          //   bit 1 - not configured to join WiFi

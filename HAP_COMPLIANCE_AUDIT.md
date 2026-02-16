@@ -97,3 +97,13 @@ It implements a substantial subset of HAP-over-IP, but the repo lacks key alignm
 - Apple-required compliance/certification tests passed for target product class.
 - Evidence archived and linked from release artifacts.
 
+
+
+## Implemented in this repository update
+
+- Added Kconfig controls for HAP mDNS protocol/version metadata and setup payload flags.
+- Replaced hard-coded `ff` mDNS TXT value with a configurable value (`HOMEKIT_MDNS_FEATURE_FLAGS`).
+- Added optional IPv6 enablement in the built-in mDNS stack via `HOMEKIT_MDNS_ENABLE_IPV6`.
+- Updated README with explicit HAP alignment controls and compliance note.
+
+These changes improve alignment readiness but do not, by themselves, prove formal latest-HAP certification without Apple validation artifacts.

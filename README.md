@@ -135,6 +135,18 @@ tools/gen_qrcode 5 123-45-678 1QJ8 qrcode.png
 
 ---
 
+
+## HAP Alignment Controls (ESP-IDF Kconfig)
+
+This component now exposes explicit HAP alignment controls in `menuconfig`:
+
+- `HOMEKIT_MDNS_PROTOCOL_VERSION` (`pv` TXT record, default `1.1`)
+- `HOMEKIT_MDNS_FEATURE_FLAGS` (`ff` TXT record, default `0`)
+- `HOMEKIT_SETUP_PAYLOAD_FLAGS` (setup payload transport flags, default `2` for IP)
+- `HOMEKIT_MDNS_ENABLE_IPV6` (built-in mDNS IPv6 support, default disabled)
+
+Use these settings to align discovery and setup payload behavior with your target HomeKit profile.
+
 ## HomeKit Accessory Categories
 | Category              | Number |
 |----------------------|--------|
@@ -178,6 +190,10 @@ tools/gen_qrcode 5 123-45-678 1QJ8 qrcode.png
 For the full list, refer to the official HomeKit documentation.
 
 ---
+
+
+> **Compliance note:** Passing Apple Home app pairing is not equivalent to full, latest HAP certification.
+> For strict compliance claims, run Apple-required validation/certification workflows for your target product profile and retain test evidence.
 
 ## Conclusion
 By following this guide, you've successfully set up an ESP32-based HomeKit accessory using ESP-IDF. Happy coding!

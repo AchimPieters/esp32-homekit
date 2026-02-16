@@ -22,6 +22,7 @@
  **/
 
 #include <string.h>
+#include <stdbool.h>
 
 #include <wolfssl/wolfcrypt/settings.h>
 #include <user_settings.h>
@@ -503,26 +504,32 @@ void crypto_curve25519_done(curve25519_key *key) {
 
 
 int crypto_curve25519_generate(curve25519_key *key) {
-        int r;
-        r = crypto_curve25519_init(key);
+        int r = crypto_curve25519_init(key);
         if (r) {
                 return r;
         }
 
         WC_RNG rng;
+        bool rng_initialized = false;
+
         r = wc_InitRng(&rng);
         if (r) {
                 DEBUG("Failed to initialize RNG (code %d)", r);
-                return r;
-        }
-
-        r = wc_curve25519_make_key(&rng, 32, key);
-        if (r) {
                 crypto_curve25519_done(key);
                 return r;
         }
+        rng_initialized = true;
 
-        return 0;
+        r = wc_curve25519_make_key(&rng, CURVE25519_KEYSIZE, key);
+        if (r) {
+                DEBUG("Failed to generate Curve25519 key (code %d)", r);
+                crypto_curve25519_done(key);
+        }
+
+        if (rng_initialized)
+                wc_FreeRng(&rng);
+
+        return r;
 }
 
 
@@ -555,6 +562,14 @@ int crypto_curve25519_export_public(const curve25519_key *key, byte *buffer, siz
 
 
 int crypto_curve25519_shared_secret(const curve25519_key *private_key, const curve25519_key *public_key, byte *buffer, size_t *size) {
+        if (size == NULL)
+                return -1;
+
+        if (*size == 0) {
+                *size = CURVE25519_KEYSIZE;
+                return 0;
+        }
+
         if (*size < CURVE25519_KEYSIZE) {
                 *size = CURVE25519_KEYSIZE;
                 return -2;

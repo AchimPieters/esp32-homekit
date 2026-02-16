@@ -162,6 +162,7 @@ tools/gen_qrcode 5 123-45-678 1QJ8 qrcode.png
 | Humidifiers        | 22     |
 | Dehumidifiers      | 23     |
 | Apple TV           | 24     |
+| HomePod            | 25     |
 | Speakers           | 26     |
 | Airport            | 27     |
 | Sprinklers         | 28     |
@@ -169,6 +170,10 @@ tools/gen_qrcode 5 123-45-678 1QJ8 qrcode.png
 | Shower heads       | 30     |
 | Televisions        | 31     |
 | Target remotes     | 32     |
+| Routers            | 33     |
+| Audio receivers    | 34     |
+| TV set-top boxes   | 35     |
+| TV streaming sticks| 36     |
 
 For the full list, refer to the official HomeKit documentation.
 

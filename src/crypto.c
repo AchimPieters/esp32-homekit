@@ -79,16 +79,11 @@ int wc_SrpSetKeyH(Srp *srp, byte *secret, word32 size) {
 
 Srp *crypto_srp_new() {
         Srp *srp = malloc(sizeof(Srp));
-        if (!srp) {
-                DEBUG("Failed to allocate SRP context");
-                return NULL;
-        }
 
         DEBUG("Initializing SRP");
         int r = wc_SrpInit(srp, SRP_TYPE_SHA512, SRP_CLIENT_SIDE);
         if (r) {
                 DEBUG("Failed to initialize SRP (code %d)", r);
-                free(srp);
                 return NULL;
         }
         srp->keyGenFunc_cb = wc_SrpSetKeyH;
@@ -98,18 +93,12 @@ Srp *crypto_srp_new() {
 
 
 void crypto_srp_free(Srp *srp) {
-        if (!srp)
-                return;
-
         wc_SrpTerm(srp);
         free(srp);
 }
 
 
 int crypto_srp_init(Srp *srp, const char *username, const char *password) {
-        if (!srp || !username || !password)
-                return BAD_FUNC_ARG;
-
         DEBUG("Generating salt");
         byte salt[16];
         homekit_random_fill(salt, sizeof(salt));
@@ -139,9 +128,6 @@ int crypto_srp_init(Srp *srp, const char *username, const char *password) {
         DEBUG("Getting SRP verifier");
         word32 verifierLen = 1024;
         byte *verifier = malloc(verifierLen);
-        if (!verifier)
-                return MEMORY_E;
-
         r = wc_SrpGetVerifier(srp, verifier, &verifierLen);
         if (r) {
                 DEBUG("Failed to get SRP verifier (code %d)", r);

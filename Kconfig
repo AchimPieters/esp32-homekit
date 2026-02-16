@@ -20,33 +20,4 @@ config HOMEKIT_DEBUG
     help
         Enable debug output to serial console
 
-config HOMEKIT_MDNS_PROTOCOL_VERSION
-    string "HAP mDNS protocol version (pv TXT record)"
-    default "1.1"
-    help
-        Value advertised in mDNS TXT key 'pv'. For HAP-over-IP this is typically
-        "1.1". Override only when explicitly targeting a different protocol profile.
-
-config HOMEKIT_MDNS_FEATURE_FLAGS
-    int "HAP mDNS feature flags (ff TXT record)"
-    range 0 255
-    default 0
-    help
-        Value advertised in mDNS TXT key 'ff'. Keep at 0 unless your product
-        profile requires specific feature-flag bits.
-
-config HOMEKIT_SETUP_PAYLOAD_FLAGS
-    int "HomeKit setup payload transport flags"
-    range 0 15
-    default 2
-    help
-        4-bit value used in setup payload generation. Default 2 targets IP.
-
-config HOMEKIT_MDNS_ENABLE_IPV6
-    bool "Enable IPv6 in built-in mDNS implementation"
-    default n
-    help
-        Enables AAAA records and IPv6 sockets in the built-in mDNS stack.
-        Enable this when your target deployment requires dual-stack operation.
-
 endmenu

@@ -135,33 +135,6 @@ tools/gen_qrcode 5 123-45-678 1QJ8 qrcode.png
 
 ---
 
-
-## HAP Alignment Controls (ESP-IDF Kconfig)
-
-This component now exposes explicit HAP alignment controls in `menuconfig`:
-
-- `HOMEKIT_MDNS_PROTOCOL_VERSION` (`pv` TXT record, default `1.1`)
-- `HOMEKIT_MDNS_FEATURE_FLAGS` (`ff` TXT record, default `0`)
-- `HOMEKIT_SETUP_PAYLOAD_FLAGS` (setup payload transport flags, default `2` for IP)
-- `HOMEKIT_MDNS_ENABLE_IPV6` (built-in mDNS IPv6 support, default disabled)
-
-Use these settings to align discovery and setup payload behavior with your target HomeKit profile.
-
-
-## HAP Revision and Compliance Status
-
-This project implements the open HomeKit Accessory Protocol (HAP) server behavior used by ESP-IDF accessories, but **it is not an Apple-certified SDK** and does not, by itself, prove compliance with the latest proprietary Apple certification profile.
-
-What is aligned in this repository:
-- HAP-over-IP discovery keys are present (`md`, `pv`, `id`, `c#`, `s#`, `ff`, `sf`, `ci`, optional `sh`).
-- Setup payload generation remains `X-HM://` with configurable transport flags.
-- SRP uses RFC5054 3072-bit group and SHA-512.
-- Server-side validation now rejects HAP-disallowed setup codes (e.g. `123-45-678`, repeated-digit sequences).
-
-What still requires Apple validation workflows:
-- Full compatibility/certification against the latest HomeKit test plans and profile-specific requirements.
-- Product-level conformance evidence and certification artifacts required by Apple.
-
 ## HomeKit Accessory Categories
 | Category              | Number |
 |----------------------|--------|
@@ -189,7 +162,6 @@ What still requires Apple validation workflows:
 | Humidifiers        | 22     |
 | Dehumidifiers      | 23     |
 | Apple TV           | 24     |
-| HomePod            | 25     |
 | Speakers           | 26     |
 | Airport            | 27     |
 | Sprinklers         | 28     |
@@ -197,18 +169,10 @@ What still requires Apple validation workflows:
 | Shower heads       | 30     |
 | Televisions        | 31     |
 | Target remotes     | 32     |
-| Routers            | 33     |
-| Audio receivers    | 34     |
-| TV set-top boxes   | 35     |
-| TV streaming sticks| 36     |
 
 For the full list, refer to the official HomeKit documentation.
 
 ---
-
-
-> **Compliance note:** Passing Apple Home app pairing is not equivalent to full, latest HAP certification.
-> For strict compliance claims, run Apple-required validation/certification workflows for your target product profile and retain test evidence.
 
 ## Conclusion
 By following this guide, you've successfully set up an ESP32-based HomeKit accessory using ESP-IDF. Happy coding!

@@ -1,6 +1,6 @@
 dependencies:
   espressif/mdns:
-    version: 1.9.1
+    version: 1.8.2
   idf:
     version: '>=5.0'
   wolfssl/wolfssl:
@@ -22,4 +22,4 @@ targets:
 - esp32h2
 - esp32p4
 url: https://github.com/AchimPieters/esp32-homekit
-version: 1.3.9
+version: 1.3.3

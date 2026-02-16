@@ -72,27 +72,9 @@
 
  #define PORT 5556
 
-#ifndef HOMEKIT_MAX_CLIENTS
-#define HOMEKIT_MAX_CLIENTS 16
-#endif
-
-#ifdef CONFIG_HOMEKIT_MDNS_PROTOCOL_VERSION
-#define HOMEKIT_MDNS_PROTOCOL_VERSION CONFIG_HOMEKIT_MDNS_PROTOCOL_VERSION
-#else
-#define HOMEKIT_MDNS_PROTOCOL_VERSION "1.1"
-#endif
-
-#ifdef CONFIG_HOMEKIT_MDNS_FEATURE_FLAGS
-#define HOMEKIT_MDNS_FEATURE_FLAGS CONFIG_HOMEKIT_MDNS_FEATURE_FLAGS
-#else
-#define HOMEKIT_MDNS_FEATURE_FLAGS 0
-#endif
-
-#ifdef CONFIG_HOMEKIT_SETUP_PAYLOAD_FLAGS
-#define HOMEKIT_SETUP_PAYLOAD_FLAGS CONFIG_HOMEKIT_SETUP_PAYLOAD_FLAGS
-#else
-#define HOMEKIT_SETUP_PAYLOAD_FLAGS 2
-#endif
+ #ifndef HOMEKIT_MAX_CLIENTS
+ #define HOMEKIT_MAX_CLIENTS 16
+ #endif
 
  struct _client_context_t;
  typedef struct _client_context_t client_context_t;
@@ -4081,7 +4063,7 @@
          // accessory model name (required)
          homekit_mdns_add_txt("md", "%s", model->value.string_value);
          // protocol version (required)
-         homekit_mdns_add_txt("pv", HOMEKIT_MDNS_PROTOCOL_VERSION);
+         homekit_mdns_add_txt("pv", "1.0");
          // device ID (required)
          // should be in format XX:XX:XX:XX:XX:XX, otherwise devices will ignore it
          homekit_mdns_add_txt("id", "%s", server->accessory_id);
@@ -4092,7 +4074,7 @@
          // feature flags (required if non-zero)
          //   bit 0 - supports HAP pairing. required for all HomeKit accessories
          //   bits 1-7 - reserved
-         homekit_mdns_add_txt("ff", "%d", HOMEKIT_MDNS_FEATURE_FLAGS & 0xff);
+         homekit_mdns_add_txt("ff", "0");
          // status flags
          //   bit 0 - not paired
          //   bit 1 - not configured to join WiFi
@@ -4205,32 +4187,8 @@
          vTaskDelete(NULL);
  }
 
-#define ISDIGIT(x) isdigit((unsigned char)(x))
-#define ISBASE36(x) (isdigit((unsigned char)(x)) || (x >= 'A' && x <= 'Z'))
-
-static bool homekit_is_disallowed_setup_code(const char *password) {
-        const char *disallowed_codes[] = {
-                "000-00-000",
-                "111-11-111",
-                "222-22-222",
-                "333-33-333",
-                "444-44-444",
-                "555-55-555",
-                "666-66-666",
-                "777-77-777",
-                "888-88-888",
-                "999-99-999",
-                "123-45-678",
-                "876-54-321",
-        };
-
-        for (size_t i = 0; i < sizeof(disallowed_codes) / sizeof(disallowed_codes[0]); i++) {
-                if (!strcmp(password, disallowed_codes[i]))
-                        return true;
-        }
-
-        return false;
-}
+ #define ISDIGIT(x) isdigit((unsigned char)(x))
+ #define ISBASE36(x) (isdigit((unsigned char)(x)) || (x >= 'A' && x <= 'Z'))
 
  int accessory_info_cmp_accessory(const accessory_info_t *a, const accessory_info_t *b) {
          return (a->accessory == b->accessory) ? 0 : ((a->accessory < b->accessory) ? -1 : 1);
@@ -4395,12 +4353,6 @@ static bool homekit_is_disallowed_setup_code(const char *password) {
                                "invalid password format");
                          return;
                  }
-
-                 if (homekit_is_disallowed_setup_code(p)) {
-                         ERROR("Error initializing HomeKit accessory server: "
-                               "setup code is disallowed by HAP requirements");
-                         return;
-                 }
          }
 
          if (config->setupId) {
@@ -4519,7 +4471,7 @@ static bool homekit_is_disallowed_setup_code(const char *password) {
          payload |= accessory->category & 0xff;
 
          payload <<= 4;
-         payload |= HOMEKIT_SETUP_PAYLOAD_FLAGS & 0x0f; // defaults to 2 (IP), configurable at build time
+         payload |= 2; // flags (2=IP, 4=BLE, 8=IP_WAC)
 
          payload <<= 27;
          payload |= setup_code & 0x7fffffff;

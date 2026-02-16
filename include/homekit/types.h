@@ -259,7 +259,7 @@ static inline homekit_accessory_t *homekit_accessory_default(homekit_accessory_t
 // Macro to define accessory
 #define HOMEKIT_ACCESSORY(...) \
         homekit_accessory_default(&(homekit_accessory_t) { \
-                ##__VA_ARGS__ \
+                __VA_ARGS__ \
         })
 
 // Macro to define service inside accessory definition.

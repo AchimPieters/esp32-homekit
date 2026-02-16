@@ -72,9 +72,17 @@
 
  #define PORT 5556
 
- #ifndef HOMEKIT_MAX_CLIENTS
- #define HOMEKIT_MAX_CLIENTS 16
- #endif
+#ifndef HOMEKIT_MAX_CLIENTS
+#define HOMEKIT_MAX_CLIENTS 16
+#endif
+
+#ifndef HOMEKIT_MDNS_PROTOCOL_VERSION
+#define HOMEKIT_MDNS_PROTOCOL_VERSION "1.1"
+#endif
+
+#ifndef HOMEKIT_SETUP_PAYLOAD_FLAGS
+#define HOMEKIT_SETUP_PAYLOAD_FLAGS 2
+#endif
 
  struct _client_context_t;
  typedef struct _client_context_t client_context_t;
@@ -4063,7 +4071,7 @@
          // accessory model name (required)
          homekit_mdns_add_txt("md", "%s", model->value.string_value);
          // protocol version (required)
-         homekit_mdns_add_txt("pv", "1.0");
+         homekit_mdns_add_txt("pv", HOMEKIT_MDNS_PROTOCOL_VERSION);
          // device ID (required)
          // should be in format XX:XX:XX:XX:XX:XX, otherwise devices will ignore it
          homekit_mdns_add_txt("id", "%s", server->accessory_id);
@@ -4471,7 +4479,7 @@
          payload |= accessory->category & 0xff;
 
          payload <<= 4;
-         payload |= 2; // flags (2=IP, 4=BLE, 8=IP_WAC)
+         payload |= HOMEKIT_SETUP_PAYLOAD_FLAGS & 0x0f; // defaults to 2 (IP), configurable at build time
 
          payload <<= 27;
          payload |= setup_code & 0x7fffffff;

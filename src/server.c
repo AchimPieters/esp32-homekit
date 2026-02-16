@@ -4205,8 +4205,32 @@
          vTaskDelete(NULL);
  }
 
- #define ISDIGIT(x) isdigit((unsigned char)(x))
- #define ISBASE36(x) (isdigit((unsigned char)(x)) || (x >= 'A' && x <= 'Z'))
+#define ISDIGIT(x) isdigit((unsigned char)(x))
+#define ISBASE36(x) (isdigit((unsigned char)(x)) || (x >= 'A' && x <= 'Z'))
+
+static bool homekit_is_disallowed_setup_code(const char *password) {
+        const char *disallowed_codes[] = {
+                "000-00-000",
+                "111-11-111",
+                "222-22-222",
+                "333-33-333",
+                "444-44-444",
+                "555-55-555",
+                "666-66-666",
+                "777-77-777",
+                "888-88-888",
+                "999-99-999",
+                "123-45-678",
+                "876-54-321",
+        };
+
+        for (size_t i = 0; i < sizeof(disallowed_codes) / sizeof(disallowed_codes[0]); i++) {
+                if (!strcmp(password, disallowed_codes[i]))
+                        return true;
+        }
+
+        return false;
+}
 
  int accessory_info_cmp_accessory(const accessory_info_t *a, const accessory_info_t *b) {
          return (a->accessory == b->accessory) ? 0 : ((a->accessory < b->accessory) ? -1 : 1);
@@ -4369,6 +4393,12 @@
                        ISDIGIT(p[7]) && ISDIGIT(p[8]) && ISDIGIT(p[9]))) {
                          ERROR("Error initializing HomeKit accessory server: "
                                "invalid password format");
+                         return;
+                 }
+
+                 if (homekit_is_disallowed_setup_code(p)) {
+                         ERROR("Error initializing HomeKit accessory server: "
+                               "setup code is disallowed by HAP requirements");
                          return;
                  }
          }

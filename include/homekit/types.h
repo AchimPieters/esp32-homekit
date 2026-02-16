@@ -246,19 +246,9 @@ struct _homekit_accessory {
 homekit_value_t homekit_characteristic_default_getter_ex(const homekit_characteristic_t *ch);
 void homekit_characteristic_default_setter_ex(homekit_characteristic_t *ch, homekit_value_t value);
 
-static inline homekit_accessory_t *homekit_accessory_default(homekit_accessory_t *accessory) {
-        if (!accessory->config_number) {
-                accessory->config_number = 1;
-        }
-        if (!accessory->category) {
-                accessory->category = homekit_accessory_category_other;
-        }
-        return accessory;
-}
-
 // Macro to define accessory
 #define HOMEKIT_ACCESSORY(...) \
-        homekit_accessory_default(&(homekit_accessory_t) { \
+        &(homekit_accessory_t) { \
                 __VA_ARGS__ \
         })
 

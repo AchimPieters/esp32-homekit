@@ -147,6 +147,21 @@ This component now exposes explicit HAP alignment controls in `menuconfig`:
 
 Use these settings to align discovery and setup payload behavior with your target HomeKit profile.
 
+
+## HAP Revision and Compliance Status
+
+This project implements the open HomeKit Accessory Protocol (HAP) server behavior used by ESP-IDF accessories, but **it is not an Apple-certified SDK** and does not, by itself, prove compliance with the latest proprietary Apple certification profile.
+
+What is aligned in this repository:
+- HAP-over-IP discovery keys are present (`md`, `pv`, `id`, `c#`, `s#`, `ff`, `sf`, `ci`, optional `sh`).
+- Setup payload generation remains `X-HM://` with configurable transport flags.
+- SRP uses RFC5054 3072-bit group and SHA-512.
+- Server-side validation now rejects HAP-disallowed setup codes (e.g. `123-45-678`, repeated-digit sequences).
+
+What still requires Apple validation workflows:
+- Full compatibility/certification against the latest HomeKit test plans and profile-specific requirements.
+- Product-level conformance evidence and certification artifacts required by Apple.
+
 ## HomeKit Accessory Categories
 | Category              | Number |
 |----------------------|--------|

@@ -249,6 +249,15 @@ void homekit_characteristic_default_setter_ex(homekit_characteristic_t *ch, home
                 ##__VA_ARGS__ \
         }
 
+// Macro to define accessory with explicit category and default config number.
+// This avoids override-init warnings when setting category in strict builds.
+#define HOMEKIT_ACCESSORY_WITH_CATEGORY(_category, ...) \
+        & (homekit_accessory_t) { \
+                .config_number=1, \
+                .category=_category, \
+                ##__VA_ARGS__ \
+        }
+
 // Macro to define service inside accessory definition.
 // Requires HOMEKIT_SERVICE_<name> define to expand to service type UUID string
 #define HOMEKIT_SERVICE(_type, ...) \

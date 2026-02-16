@@ -1320,25 +1320,21 @@
                          break;
                  }
 
-                 if (context->server->pairing_context) {
-                         if (context->server->pairing_context->client != context) {
-                                 CLIENT_INFO(context, "Refusing to pair: another pairing in progress");
-                                 send_tlv_error_response(context, 2, TLVError_Busy);
-                                 break;
-                         } else {
-                                 CLIENT_INFO(context, "Restarting existing pairing session");
-                                 pairing_context_free(context->server->pairing_context);
-                                 context->server->pairing_context = NULL;
-                         }
-                 }
-
-                 context->server->pairing_context = pairing_context_new();
-                 if (!context->server->pairing_context) {
-                         CLIENT_ERROR(context, "Refusing to pair: failed to allocate memory for pairing context");
-                         send_tlv_error_response(context, 2, TLVError_Unknown);
-                         break;
-                 }
-                 context->server->pairing_context->client = context;
+                if (context->server->pairing_context) {
+                        if (context->server->pairing_context->client != context) {
+                                CLIENT_INFO(context, "Refusing to pair: another pairing in progress");
+                                send_tlv_error_response(context, 2, TLVError_Busy);
+                                break;
+                        }
+                } else {
+                        context->server->pairing_context = pairing_context_new();
+                        if (!context->server->pairing_context) {
+                                CLIENT_ERROR(context, "Refusing to pair: failed to allocate memory for pairing context");
+                                send_tlv_error_response(context, 2, TLVError_Unknown);
+                                break;
+                        }
+                        context->server->pairing_context->client = context;
+                }
 
                  CLIENT_DEBUG(context, "Initializing crypto");
                  DEBUG_HEAP();

@@ -62,6 +62,7 @@ typedef enum {
         homekit_accessory_category_humidifiers = 22,
         homekit_accessory_category_dehumidifiers = 23,
         homekit_accessory_category_apple_tv = 24,
+        homekit_accessory_category_homepod = 25,
         homekit_accessory_category_speakers = 26,
         homekit_accessory_category_airport = 27,
         homekit_accessory_category_sprinklers = 28,
@@ -69,6 +70,10 @@ typedef enum {
         homekit_accessory_category_shower_heads = 30,
         homekit_accessory_category_televisions = 31,
         homekit_accessory_category_target_remotes = 32,
+        homekit_accessory_category_routers = 33,
+        homekit_accessory_category_audio_receivers = 34,
+        homekit_accessory_category_tv_set_top_boxes = 35,
+        homekit_accessory_category_tv_streaming_sticks = 36,
 } homekit_accessory_category_t;
 
 struct _homekit_accessory;

@@ -21,7 +21,11 @@
 #endif
 
 #define MDNS_ENABLE_IP4 1
+#ifdef CONFIG_HOMEKIT_MDNS_ENABLE_IPV6
+#define MDNS_ENABLE_IP6 1
+#else
 #define MDNS_ENABLE_IP6 0
+#endif
 
 #include <unistd.h>
 

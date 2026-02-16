@@ -250,7 +250,7 @@ void homekit_characteristic_default_setter_ex(homekit_characteristic_t *ch, home
 #define HOMEKIT_ACCESSORY(...) \
         &(homekit_accessory_t) { \
                 __VA_ARGS__ \
-        })
+        }
 
 // Macro to define service inside accessory definition.
 // Requires HOMEKIT_SERVICE_<name> define to expand to service type UUID string

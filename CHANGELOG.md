@@ -1,8 +1,9 @@
-## [1.3.8] - 2026-15-02
+## [Unreleased]
+
+### Added
 - Remove GCC pragma for override-init warnings
 - Updated espressif/mdns to 1.9.1
-- Make HAP setup payload transport flags configurable via `HOMEKIT_SETUP_PAYLOAD_FLAGS`
-- Update advertised HAP mDNS protocol version default to `1.1` via `HOMEKIT_MDNS_PROTOCOL_VERSION`
+- Updated wolfssl/wolfssl to 5.8.2~1
 - Added missing HAP accessory categories for HomePod (25), Router (33), Audio Receiver (34), TV Set-Top Box (35), and TV Streaming Stick (36).
 - Updated README HomeKit category reference table to include the above categories.
 

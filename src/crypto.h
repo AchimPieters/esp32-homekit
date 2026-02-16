@@ -94,7 +94,7 @@ int crypto_ed25519_verify(
 
 // CURVE25519
 int crypto_curve25519_init(curve25519_key *key);
-int crypto_curve25519_done(curve25519_key *key);
+void crypto_curve25519_done(curve25519_key *key);
 int crypto_curve25519_generate(curve25519_key *key);
 int crypto_curve25519_import_public(
         curve25519_key *key,

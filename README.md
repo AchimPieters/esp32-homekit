@@ -190,7 +190,7 @@ By following this guide, you've successfully set up an ESP32-based HomeKit acces
 
 ###### MIT License
 
-<sub>Copyright © 2025 StudioPieters© | Achim Pieters</sub>
+<sub>Copyright © 2026 StudioPieters© | Achim Pieters</sub>
 
 <sub>Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

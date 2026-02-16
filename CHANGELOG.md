@@ -1,4 +1,4 @@
-## [Unreleased]
+## [1.3.8] - 2026-16-02
 
 ### Added
 - Remove GCC pragma for override-init warnings

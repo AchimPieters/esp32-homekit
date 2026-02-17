@@ -39,41 +39,36 @@ typedef enum {
 
 typedef enum {
         homekit_accessory_category_other = 1,
-        homekit_accessory_category_bridges = 2,
-        homekit_accessory_category_fans = 3,
-        homekit_accessory_category_garage_door_openers = 4,
+        homekit_accessory_category_bridge = 2,
+        homekit_accessory_category_fan = 3,
+        homekit_accessory_category_garage_door_opener = 4,
         homekit_accessory_category_lighting = 5,
-        homekit_accessory_category_locks = 6,
-        homekit_accessory_category_outlets = 7,
-        homekit_accessory_category_switches = 8,
-        homekit_accessory_category_thermostats = 9,
-        homekit_accessory_category_sensors = 10,
-        homekit_accessory_category_security_systems = 11,
-        homekit_accessory_category_doors = 12,
-        homekit_accessory_category_windows = 13,
+        homekit_accessory_category_lock = 6,
+        homekit_accessory_category_outlet = 7,
+        homekit_accessory_category_switch = 8,
+        homekit_accessory_category_thermostat = 9,
+        homekit_accessory_category_sensor = 10,
+        homekit_accessory_category_security_system = 11,
+        homekit_accessory_category_door = 12,
+        homekit_accessory_category_window = 13,
         homekit_accessory_category_window_coverings = 14,
-        homekit_accessory_category_programmable_switches = 15,
-        homekit_accessory_category_range_extenders = 16,
-        homekit_accessory_category_ip_cameras = 17,
-        homekit_accessory_category_video_door_bells = 18,
-        homekit_accessory_category_air_purifiers = 19,
-        homekit_accessory_category_heaters = 20,
-        homekit_accessory_category_air_conditioners = 21,
-        homekit_accessory_category_humidifiers = 22,
-        homekit_accessory_category_dehumidifiers = 23,
+        homekit_accessory_category_programmable_switch = 15,
+        homekit_accessory_category_range_extender = 16,
+        homekit_accessory_category_ip_camera = 17,
+        homekit_accessory_category_video_door_bell = 18,
+        homekit_accessory_category_air_purifier = 19,
+        homekit_accessory_category_heater = 20,
+        homekit_accessory_category_air_conditioner = 21,
+        homekit_accessory_category_humidifier = 22,
+        homekit_accessory_category_dehumidifier = 23,
         homekit_accessory_category_apple_tv = 24,
-        homekit_accessory_category_homepod = 25,
-        homekit_accessory_category_speakers = 26,
+        homekit_accessory_category_speaker = 26,
         homekit_accessory_category_airport = 27,
-        homekit_accessory_category_sprinklers = 28,
-        homekit_accessory_category_faucets = 29,
-        homekit_accessory_category_shower_heads = 30,
-        homekit_accessory_category_televisions = 31,
-        homekit_accessory_category_target_remotes = 32,
-        homekit_accessory_category_routers = 33,
-        homekit_accessory_category_audio_receivers = 34,
-        homekit_accessory_category_tv_set_top_boxes = 35,
-        homekit_accessory_category_tv_streaming_sticks = 36,
+        homekit_accessory_category_sprinkler = 28,
+        homekit_accessory_category_faucet = 29,
+        homekit_accessory_category_shower_head = 30,
+        homekit_accessory_category_television = 31,
+        homekit_accessory_category_target_remote = 32,
 } homekit_accessory_category_t;
 
 struct _homekit_accessory;
@@ -246,21 +241,12 @@ struct _homekit_accessory {
 homekit_value_t homekit_characteristic_default_getter_ex(const homekit_characteristic_t *ch);
 void homekit_characteristic_default_setter_ex(homekit_characteristic_t *ch, homekit_value_t value);
 
-static inline homekit_accessory_t *homekit_accessory_default(homekit_accessory_t *accessory) {
-        if (!accessory->config_number) {
-                accessory->config_number = 1;
-        }
-        if (!accessory->category) {
-                accessory->category = homekit_accessory_category_other;
-        }
-        return accessory;
-}
-
 // Macro to define accessory
 #define HOMEKIT_ACCESSORY(...) \
-        homekit_accessory_default(&(homekit_accessory_t) { \
-                ##__VA_ARGS__ \
-        })
+        & (homekit_accessory_t) { \
+                .config_number = 1, \
+                __VA_ARGS__ \
+        }
 
 // Macro to define service inside accessory definition.
 // Requires HOMEKIT_SERVICE_<name> define to expand to service type UUID string

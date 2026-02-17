@@ -21,6 +21,8 @@
    for more information visit https://www.studiopieters.nl
  **/
 
+#include <stdint.h>
+static inline const unsigned char* as_byte(const char* s){return (const unsigned char*)s;}
 #include <string.h>
 
 #include <wolfssl/wolfcrypt/settings.h>

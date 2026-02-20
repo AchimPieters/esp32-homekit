@@ -22,4 +22,4 @@ targets:
 - esp32h2
 - esp32p4
 url: https://github.com/AchimPieters/esp32-homekit
-version: 2.0.1
+version: 2.0.2

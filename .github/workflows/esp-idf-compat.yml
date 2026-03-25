@@ -44,19 +44,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-      - name: Pull ESP-IDF Docker image
-        run: docker pull espressif/idf:${{ matrix.idf }}
-
-      - name: Build smoke app in ESP-IDF Docker
-        run: |
-          set -euxo pipefail
-          docker run --rm \
-            -v "${{ github.workspace }}:/project" \
-            -w /project/ci/smoke_app \
-            espressif/idf:${{ matrix.idf }} \
-            bash -lc "git config --global --add safe.directory /project && \
-                      git config --global --add safe.directory /project/ci/smoke_app && \
-                      idf.py --version && \
-                      idf.py set-target ${{ matrix.target }} && \
-                      idf.py build -v"
+      - name: Build smoke app (ESP-IDF CI action)
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: ${{ matrix.idf }}
+          target: ${{ matrix.target }}
+          path: ci/smoke_app
+          command: idf.py set-target ${{ matrix.target }} && idf.py build -v

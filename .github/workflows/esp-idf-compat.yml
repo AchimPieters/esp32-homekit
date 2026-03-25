@@ -1,0 +1,29 @@
+name: ESP-IDF compatibility
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    name: idf-${{ matrix.idf }} / ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    container: espressif/idf:${{ matrix.idf }}
+    strategy:
+      fail-fast: false
+      matrix:
+        idf: ["v5.3", "v6.0"]
+        target: ["esp32", "esp32c3"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: ESP-IDF version
+        run: idf.py --version
+
+      - name: Build smoke app
+        working-directory: ci/smoke_app
+        run: |
+          idf.py set-target ${{ matrix.target }}
+          idf.py build

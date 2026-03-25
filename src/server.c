@@ -3329,7 +3329,7 @@
                                          INFO("Last admin pairing was removed, restoring Homekit to factory default and restart");
 
                                          homekit_storage_reset();
-                                         vTaskDelay(50); //allow other stuff to settle
+                                         vTaskDelay(pdMS_TO_TICKS(50)); //allow other stuff to settle
                                          esp_restart();
                                  }
                          }

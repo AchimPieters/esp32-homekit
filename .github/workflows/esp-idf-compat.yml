@@ -1,14 +1,13 @@
 name: ESP-IDF compatibility
 
 on:
-  push:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
     name: idf-${{ matrix.idf }} / ${{ matrix.target }}
     runs-on: ubuntu-latest
-    container: espressif/idf:${{ matrix.idf }}
     strategy:
       fail-fast: false
       matrix:
@@ -46,11 +45,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: ESP-IDF version
-        run: idf.py --version
+      - name: Pull ESP-IDF Docker image
+        run: docker pull espressif/idf:${{ matrix.idf }}
 
-      - name: Build smoke app
-        working-directory: ci/smoke_app
+      - name: Build smoke app in ESP-IDF Docker
         run: |
-          idf.py set-target ${{ matrix.target }}
-          idf.py build
+          docker run --rm \
+            -v "${{ github.workspace }}:/project" \
+            -w /project/ci/smoke_app \
+            espressif/idf:${{ matrix.idf }} \
+            bash -lc "idf.py --version && idf.py set-target ${{ matrix.target }} && idf.py build"

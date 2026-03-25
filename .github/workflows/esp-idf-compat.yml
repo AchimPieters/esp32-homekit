@@ -12,8 +12,35 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        idf: ["v5.3", "v6.0"]
-        target: ["esp32", "esp32c3"]
+        include:
+          # Backward compatibility line (ESP-IDF v5.x)
+          - idf: "v5.3"
+            target: "esp32"
+          - idf: "v5.3"
+            target: "esp32s2"
+          - idf: "v5.3"
+            target: "esp32s3"
+          - idf: "v5.3"
+            target: "esp32c2"
+          - idf: "v5.3"
+            target: "esp32c3"
+          - idf: "v5.3"
+            target: "esp32c6"
+          # Latest major line (ESP-IDF v6.x)
+          - idf: "v6.0"
+            target: "esp32"
+          - idf: "v6.0"
+            target: "esp32s2"
+          - idf: "v6.0"
+            target: "esp32s3"
+          - idf: "v6.0"
+            target: "esp32c2"
+          - idf: "v6.0"
+            target: "esp32c3"
+          - idf: "v6.0"
+            target: "esp32c5"
+          - idf: "v6.0"
+            target: "esp32c6"
 
     steps:
       - name: Checkout

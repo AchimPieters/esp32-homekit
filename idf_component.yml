@@ -1,4 +1,6 @@
 dependencies:
+  espressif/cjson:
+    version: "^1.7.19"
   espressif/mdns:
     version: 1.8.2
   idf:

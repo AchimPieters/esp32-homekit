@@ -50,8 +50,13 @@ jobs:
 
       - name: Build smoke app in ESP-IDF Docker
         run: |
+          set -euxo pipefail
           docker run --rm \
             -v "${{ github.workspace }}:/project" \
             -w /project/ci/smoke_app \
             espressif/idf:${{ matrix.idf }} \
-            bash -lc "idf.py --version && idf.py set-target ${{ matrix.target }} && idf.py build"
+            bash -lc "git config --global --add safe.directory /project && \
+                      git config --global --add safe.directory /project/ci/smoke_app && \
+                      idf.py --version && \
+                      idf.py set-target ${{ matrix.target }} && \
+                      idf.py build -v"

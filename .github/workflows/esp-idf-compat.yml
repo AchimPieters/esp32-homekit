@@ -8,37 +8,39 @@ jobs:
   build:
     name: idf-${{ matrix.idf }} / ${{ matrix.target }}
     runs-on: ubuntu-latest
+    env:
+      IDF_PATH: ${{ github.workspace }}/.esp-idf
     strategy:
       fail-fast: false
       matrix:
         include:
           # Backward compatibility line (ESP-IDF v5.x)
-          - idf: "release-v5.3"
+          - idf: "release/v5.3"
             target: "esp32"
-          - idf: "release-v5.3"
+          - idf: "release/v5.3"
             target: "esp32s2"
-          - idf: "release-v5.3"
+          - idf: "release/v5.3"
             target: "esp32s3"
-          - idf: "release-v5.3"
+          - idf: "release/v5.3"
             target: "esp32c2"
-          - idf: "release-v5.3"
+          - idf: "release/v5.3"
             target: "esp32c3"
-          - idf: "release-v5.3"
+          - idf: "release/v5.3"
             target: "esp32c6"
           # Latest major line (ESP-IDF v6.x)
-          - idf: "release-v6.0"
+          - idf: "release/v6.0"
             target: "esp32"
-          - idf: "release-v6.0"
+          - idf: "release/v6.0"
             target: "esp32s2"
-          - idf: "release-v6.0"
+          - idf: "release/v6.0"
             target: "esp32s3"
-          - idf: "release-v6.0"
+          - idf: "release/v6.0"
             target: "esp32c2"
-          - idf: "release-v6.0"
+          - idf: "release/v6.0"
             target: "esp32c3"
-          - idf: "release-v6.0"
+          - idf: "release/v6.0"
             target: "esp32c5"
-          - idf: "release-v6.0"
+          - idf: "release/v6.0"
             target: "esp32c6"
 
     steps:
@@ -47,10 +49,21 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Build smoke app (ESP-IDF CI action)
-        uses: espressif/esp-idf-ci-action@v1
-        with:
-          esp_idf_version: ${{ matrix.idf }}
-          target: ${{ matrix.target }}
-          path: ci/smoke_app
-          command: idf.py build -v
+      - name: Clone ESP-IDF
+        run: git clone --depth 1 --branch "${{ matrix.idf }}" https://github.com/espressif/esp-idf.git "${IDF_PATH}"
+
+      - name: Install ESP-IDF tools
+        shell: bash
+        run: |
+          set -euxo pipefail
+          "${IDF_PATH}/install.sh" --targets "${{ matrix.target }}"
+
+      - name: Build smoke app
+        shell: bash
+        run: |
+          set -euxo pipefail
+          . "${IDF_PATH}/export.sh"
+          cd ci/smoke_app
+          idf.py --version
+          idf.py set-target "${{ matrix.target }}"
+          idf.py build -v

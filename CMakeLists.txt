@@ -1,10 +1,5 @@
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DWOLFSSL_USER_SETTINGS")
 
-set(HOMEKIT_JSON_COMPONENT json)
-if(DEFINED IDF_VERSION_MAJOR AND IDF_VERSION_MAJOR GREATER_EQUAL 6)
-    set(HOMEKIT_JSON_COMPONENT cjson)
-endif()
-
 idf_component_register(
     SRC_DIRS src
     EXCLUDE_SRCS
@@ -12,7 +7,7 @@ idf_component_register(
         "src/homekit_mdns_debug.c"
     INCLUDE_DIRS "include"
     PRIV_INCLUDE_DIRS "src"
-    REQUIRES wolfssl esp_partition ${HOMEKIT_JSON_COMPONENT} http_parser spi_flash nvs_flash
+    REQUIRES wolfssl esp_partition cjson http_parser spi_flash nvs_flash
 )
 
 #if(CONFIG_HOMEKIT_SMALL)

@@ -53,4 +53,4 @@ jobs:
           esp_idf_version: ${{ matrix.idf }}
           target: ${{ matrix.target }}
           path: ci/smoke_app
-          command: idf.py set-target ${{ matrix.target }} && idf.py build -v
+          command: idf.py build -v

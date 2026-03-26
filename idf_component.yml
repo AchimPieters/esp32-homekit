@@ -1,11 +1,13 @@
 dependencies:
+  espressif/cjson:
+    version: "^1.7.19"
   espressif/mdns:
     version: 1.8.2
   idf:
-    version: '>=5.0'
+    version: '>=5.0,<7.0'
   wolfssl/wolfssl:
     version: 5.8.0
-description: Apple HomeKit Accessory Server Library for IDF V5.x.
+description: Apple HomeKit Accessory Server Library for IDF v5.x and v6.x.
 issues: https://github.com/AchimPieters/esp32-homekit/issues
 license: MIT
 maintainers:

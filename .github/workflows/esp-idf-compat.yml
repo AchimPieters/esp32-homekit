@@ -1,0 +1,111 @@
+name: ESP-IDF compatibility
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: idf-${{ matrix.idf }} / ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    env:
+      IDF_PATH: ${{ github.workspace }}/.esp-idf
+      IDF_COMPONENT_REGISTRY_URL: https://components.espressif.com/
+      IDF_COMPONENT_STORAGE_URL: https://components-file.espressif.com/
+      IDF_COMPONENT_API_TIMEOUT: "120"
+      IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES: "120"
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          # Backward compatibility line (ESP-IDF v5.x)
+          - idf: "release/v5.3"
+            target: "esp32"
+          - idf: "release/v5.3"
+            target: "esp32s2"
+          - idf: "release/v5.3"
+            target: "esp32s3"
+          - idf: "release/v5.3"
+            target: "esp32c2"
+          - idf: "release/v5.3"
+            target: "esp32c3"
+          - idf: "release/v5.3"
+            target: "esp32c6"
+          # Latest major line (ESP-IDF v6.x)
+          - idf: "release/v6.0"
+            target: "esp32"
+          - idf: "release/v6.0"
+            target: "esp32s2"
+          - idf: "release/v6.0"
+            target: "esp32s3"
+          - idf: "release/v6.0"
+            target: "esp32c2"
+          - idf: "release/v6.0"
+            target: "esp32c3"
+          - idf: "release/v6.0"
+            target: "esp32c5"
+          - idf: "release/v6.0"
+            target: "esp32c6"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Clone ESP-IDF
+        run: git clone --depth 1 --branch "${{ matrix.idf }}" https://github.com/espressif/esp-idf.git "${IDF_PATH}"
+
+      - name: Set up Python 3.11 (IDF v5.x/v6.x compatible)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ESP-IDF tools
+        shell: bash
+        run: |
+          set -euxo pipefail
+          # Both release/v5.3 and release/v6.0 install.sh use positional targets
+          for attempt in 1 2 3; do
+            if "${IDF_PATH}/install.sh" "${{ matrix.target }}"; then
+              break
+            fi
+            if [[ "${attempt}" -eq 3 ]]; then
+              echo "ESP-IDF install failed after ${attempt} attempts"
+              exit 1
+            fi
+            echo "Install attempt ${attempt} failed, retrying in 20s..."
+            sleep 20
+          done
+
+      - name: Build examples/led app
+        shell: bash
+        run: |
+          set -euxo pipefail
+          . "${IDF_PATH}/export.sh"
+          cd examples/led
+          idf.py --version
+          idf.py set-target "${{ matrix.target }}"
+          for attempt in 1 2 3; do
+            if idf.py build -v; then
+              break
+            fi
+            if [[ "${attempt}" -eq 3 ]]; then
+              echo "Build failed after ${attempt} attempts"
+              exit 1
+            fi
+            echo "Build attempt ${attempt} failed, retrying in 20s..."
+            sleep 20
+          done
+
+      - name: Upload build logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: esp-idf-logs-${{ replace(matrix.idf, '/', '-') }}-${{ matrix.target }}
+          path: |
+            examples/led/build/log/
+            examples/led/build/CMakeFiles/CMakeError.log
+            examples/led/build/CMakeFiles/CMakeOutput.log
+          if-no-files-found: ignore

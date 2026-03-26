@@ -52,18 +52,23 @@ jobs:
       - name: Clone ESP-IDF
         run: git clone --depth 1 --branch "${{ matrix.idf }}" https://github.com/espressif/esp-idf.git "${IDF_PATH}"
 
+      - name: Set up Python 3.11 (IDF v5.x/v6.x compatible)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
       - name: Install ESP-IDF tools
         shell: bash
         run: |
           set -euxo pipefail
           "${IDF_PATH}/install.sh" --targets "${{ matrix.target }}"
 
-      - name: Build smoke app
+      - name: Build examples/led app
         shell: bash
         run: |
           set -euxo pipefail
           . "${IDF_PATH}/export.sh"
-          cd ci/smoke_app
+          cd examples/led
           idf.py --version
           idf.py set-target "${{ matrix.target }}"
           idf.py build -v

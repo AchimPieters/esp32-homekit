@@ -103,7 +103,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: esp-idf-logs-${{ matrix.idf }}-${{ matrix.target }}
+          name: esp-idf-logs-${{ replace(matrix.idf, '/', '-') }}-${{ matrix.target }}
           path: |
             examples/led/build/log/
             examples/led/build/CMakeFiles/CMakeError.log

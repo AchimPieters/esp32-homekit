@@ -61,12 +61,8 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
-          if [[ "${{ matrix.idf }}" == "release/v5.3" ]]; then
-            # ESP-IDF v5.3 install.sh does not support --targets
-            "${IDF_PATH}/install.sh"
-          else
-            "${IDF_PATH}/install.sh" --targets "${{ matrix.target }}"
-          fi
+          # Both release/v5.3 and release/v6.0 install.sh use positional targets
+          "${IDF_PATH}/install.sh" "${{ matrix.target }}"
 
       - name: Build examples/led app
         shell: bash

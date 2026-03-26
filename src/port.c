@@ -159,6 +159,9 @@ void homekit_mdns_configure_finalize() {
 #include <mdns.h>
 #include <esp_random.h>
 #include <esp_system.h>
+#include <esp_log.h>
+
+static const char *TAG = "homekit_port";
 
 uint32_t homekit_random() {
         return esp_random();
@@ -183,13 +186,37 @@ void homekit_overclock_end() {
 }
 
 void homekit_mdns_init() {
-        mdns_init();
+        esp_err_t err = mdns_init();
+        if (err == ESP_ERR_INVALID_STATE) {
+                // Already initialized by application code, this is fine.
+                return;
+        }
+        if (err != ESP_OK) {
+                ESP_LOGE(TAG, "mDNS init failed: %s", esp_err_to_name(err));
+        }
 }
 
 void homekit_mdns_configure_init(const char *instance_name, int port) {
-        mdns_hostname_set(instance_name);
-        mdns_instance_name_set(instance_name);
-        mdns_service_add(instance_name, "_hap", "_tcp", port, NULL, 0);
+        esp_err_t err = mdns_hostname_set(instance_name);
+        if (err != ESP_OK) {
+                ESP_LOGE(TAG, "mDNS hostname set failed: %s", esp_err_to_name(err));
+        }
+
+        err = mdns_instance_name_set(instance_name);
+        if (err != ESP_OK) {
+                ESP_LOGE(TAG, "mDNS instance name set failed: %s", esp_err_to_name(err));
+        }
+
+        // On newer IDF versions this may already exist if HomeKit is restarted.
+        err = mdns_service_remove("_hap", "_tcp");
+        if (err != ESP_OK && err != ESP_ERR_NOT_FOUND) {
+                ESP_LOGW(TAG, "mDNS remove existing _hap service failed: %s", esp_err_to_name(err));
+        }
+
+        err = mdns_service_add(instance_name, "_hap", "_tcp", port, NULL, 0);
+        if (err != ESP_OK) {
+                ESP_LOGE(TAG, "mDNS service add failed: %s", esp_err_to_name(err));
+        }
 }
 
 void homekit_mdns_add_txt(const char *key, const char *format, ...) {
@@ -202,7 +229,10 @@ void homekit_mdns_add_txt(const char *key, const char *format, ...) {
         va_end(arg_ptr);
 
         if (value_len && value_len < sizeof(value)-1) {
-                mdns_service_txt_item_set("_hap", "_tcp", key, value);
+                esp_err_t err = mdns_service_txt_item_set("_hap", "_tcp", key, value);
+                if (err != ESP_OK) {
+                        ESP_LOGW(TAG, "mDNS TXT set failed for key %s: %s", key, esp_err_to_name(err));
+                }
         }
 }
 

@@ -2,6 +2,9 @@ name: ESP-IDF compatibility
 
 on:
   push:
+    branches:
+      - main
+      - work
   pull_request:
   workflow_dispatch:
 

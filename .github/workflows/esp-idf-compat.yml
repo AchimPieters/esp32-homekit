@@ -79,16 +79,6 @@ jobs:
             sleep 20
           done
 
-      - name: Preflight component registry connectivity
-        shell: bash
-        run: |
-          set -euxo pipefail
-          curl -fsSL --retry 5 --retry-delay 3 --retry-all-errors "${IDF_COMPONENT_REGISTRY_URL}"
-          curl -fsSL --retry 5 --retry-delay 3 --retry-all-errors \
-            "${IDF_COMPONENT_STORAGE_URL}/components/espressif/mdns.json" >/dev/null
-          curl -fsSL --retry 5 --retry-delay 3 --retry-all-errors \
-            "${IDF_COMPONENT_STORAGE_URL}/components/wolfssl/wolfssl.json" >/dev/null
-
       - name: Build examples/led app
         shell: bash
         run: |

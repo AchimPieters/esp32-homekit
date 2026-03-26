@@ -12,6 +12,7 @@ jobs:
       IDF_PATH: ${{ github.workspace }}/.esp-idf
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix:
         include:
           # Backward compatibility line (ESP-IDF v5.x)
@@ -62,7 +63,17 @@ jobs:
         run: |
           set -euxo pipefail
           # Both release/v5.3 and release/v6.0 install.sh use positional targets
-          "${IDF_PATH}/install.sh" "${{ matrix.target }}"
+          for attempt in 1 2 3; do
+            if "${IDF_PATH}/install.sh" "${{ matrix.target }}"; then
+              break
+            fi
+            if [[ "${attempt}" -eq 3 ]]; then
+              echo "ESP-IDF install failed after ${attempt} attempts"
+              exit 1
+            fi
+            echo "Install attempt ${attempt} failed, retrying in 20s..."
+            sleep 20
+          done
 
       - name: Build examples/led app
         shell: bash
@@ -72,4 +83,14 @@ jobs:
           cd examples/led
           idf.py --version
           idf.py set-target "${{ matrix.target }}"
-          idf.py build -v
+          for attempt in 1 2 3; do
+            if idf.py build -v; then
+              break
+            fi
+            if [[ "${attempt}" -eq 3 ]]; then
+              echo "Build failed after ${attempt} attempts"
+              exit 1
+            fi
+            echo "Build attempt ${attempt} failed, retrying in 20s..."
+            sleep 20
+          done

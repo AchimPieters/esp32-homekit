@@ -12,7 +12,7 @@ Ensure you have the necessary software installed before proceeding:
 - Sign in to your Docker account.
 - Pull the latest ESP-IDF version:
   ```sh
-  docker pull espressif/idf:v5.3
+  docker pull espressif/idf:v6.0
   ```
 
 #### Python Installation
@@ -49,8 +49,10 @@ git clone --recursive https://github.com/AchimPieters/esp32-homekit-demo.git
 
 ### 2. Set Up Docker Environment
 ```sh
-docker run -it -v ~/esp32-homekit-demo:/project -w /project espressif/idf:v5.3
+docker run -it -v ~/esp32-homekit-demo:/project -w /project espressif/idf:v6.0
 ```
+
+> This component is CI-tested on ESP-IDF **v5.3** and **v6.0** to keep backward compatibility while supporting the latest major release.
 
 ### 3. Configuration
 ```sh

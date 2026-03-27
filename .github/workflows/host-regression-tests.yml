@@ -1,0 +1,31 @@
+name: Host regression tests
+
+on:
+  push:
+    branches:
+      - main
+      - work
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  host-tests:
+    name: asan-ubsan-host-tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Compile and run host regression tests
+        shell: bash
+        run: |
+          set -euxo pipefail
+          gcc -std=c11 -Wall -Wextra -Werror -pedantic \
+            -fsanitize=address,undefined -fno-omit-frame-pointer \
+            -Iinclude -Isrc \
+            tests/host/test_core.c src/base64.c src/query_params.c src/bitset.c \
+            -o /tmp/homekit-host-tests
+          /tmp/homekit-host-tests

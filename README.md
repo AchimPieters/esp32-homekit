@@ -53,6 +53,8 @@ docker run -it -v ~/esp32-homekit-demo:/project -w /project espressif/idf:v6.0
 ```
 
 > This component is CI-tested on ESP-IDF **v5.3** and **v6.0** to keep backward compatibility while supporting the latest major release.
+>
+> Separate GitHub Actions host regression tests (`Host regression tests`) also run sanitizer-backed checks (ASan/UBSan) against core modules on each push/PR.
 
 ### 3. Configuration
 ```sh

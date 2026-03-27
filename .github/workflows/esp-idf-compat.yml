@@ -39,12 +39,13 @@ jobs:
       IDF_COMPONENT_STORAGE_URL: https://components-file.espressif.com/
       IDF_COMPONENT_API_TIMEOUT: "120"
       IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES: "120"
+      EXAMPLE_APP_DIR: examples/led
     strategy:
       fail-fast: false
       max-parallel: 2
       matrix:
         include:
-          # Backward compatibility line (ESP-IDF v5.x)
+          # Backward compatibility line (ESP-IDF v5.3)
           - idf: "release/v5.3"
             target: "esp32"
           - idf: "release/v5.3"
@@ -57,7 +58,7 @@ jobs:
             target: "esp32c3"
           - idf: "release/v5.3"
             target: "esp32c6"
-          # Latest major line (ESP-IDF v6.x)
+          # Latest major line (ESP-IDF v6.0)
           - idf: "release/v6.0"
             target: "esp32"
           - idf: "release/v6.0"
@@ -109,7 +110,7 @@ jobs:
         run: |
           set -euxo pipefail
           . "${IDF_PATH}/export.sh"
-          cd examples/led
+          cd "${EXAMPLE_APP_DIR}"
           idf.py --version
           idf.py set-target "${{ matrix.target }}"
           for attempt in 1 2 3; do
@@ -130,7 +131,7 @@ jobs:
         with:
           name: esp-idf-logs-${{ replace(matrix.idf, '/', '-') }}-${{ matrix.target }}
           path: |
-            examples/led/build/log/
-            examples/led/build/CMakeFiles/CMakeError.log
-            examples/led/build/CMakeFiles/CMakeOutput.log
+            ${{ env.EXAMPLE_APP_DIR }}/build/log/
+            ${{ env.EXAMPLE_APP_DIR }}/build/CMakeFiles/CMakeError.log
+            ${{ env.EXAMPLE_APP_DIR }}/build/CMakeFiles/CMakeOutput.log
           if-no-files-found: ignore

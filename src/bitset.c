@@ -36,7 +36,10 @@ typedef struct _bitset {
 
 
 bitset_t *bitset_new(uint16_t size) {
-        bitset_t *bs = malloc(sizeof(bitset_t) + (size + 7 / 8));
+        bitset_t *bs = malloc(sizeof(bitset_t) + ((size + 7) / 8));
+        if (!bs)
+                return NULL;
+
         bs->data = ((uint8_t*)bs) + sizeof(bitset_t);
         bs->size = size;
         memset(bs->data, 0, (size + 7) / 8);
@@ -55,6 +58,9 @@ void bitset_clear_all(bitset_t *bs) {
 
 
 bool bitset_isset(bitset_t *bs, uint16_t index) {
+        if (index >= bs->size)
+                return false;
+
         return (bs->data[index / 8] & (1 << (index % 8))) != 0;
 }
 

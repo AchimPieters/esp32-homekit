@@ -38,13 +38,17 @@ int query_param_iterator_init(query_param_iterator_t *it, const char *s, size_t 
 }
 
 void query_param_iterator_done(query_param_iterator_t *it) {
+        (void) it;
 }
 
 bool query_param_iterator_next(query_param_iterator_t *it, query_param_t *param) {
+        while (it->pos < it->len && it->data[it->pos] == '&')
+                it->pos++;
+
         if (it->pos >= it->len || it->data[it->pos] == '#')
                 return false;
 
-        int pos = it->pos;
+        size_t pos = it->pos;
         while (it->pos < it->len &&
                it->data[it->pos] != '=' &&
                it->data[it->pos] != '&' &&

@@ -49,6 +49,7 @@ unsigned char base64_decode_char(unsigned char c) {
 }
 
 size_t base64_encoded_size(const unsigned char *data, size_t size) {
+        (void) data;
         return (size + 2)/3*4;
 }
 

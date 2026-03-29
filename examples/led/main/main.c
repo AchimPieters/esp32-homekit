@@ -1,5 +1,6 @@
 /**
-   Copyright 2025 Achim Pieters | StudioPieters®
+
+   Copyright 2026 Achim Pieters | StudioPieters®
 
    Permission is hereby granted, free of charge, to any person obtaining a copy
    of this software and associated documentation files (the "Software"), to deal
@@ -19,8 +20,9 @@
    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
    for more information visit https://www.studiopieters.nl
- **/
 
+ **/
+ 
 #include <stdio.h>
 #include <esp_wifi.h>
 #include <esp_event.h>

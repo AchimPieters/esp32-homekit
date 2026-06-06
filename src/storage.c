@@ -94,9 +94,11 @@ int homekit_storage_init() {
                 return -1;
         }
 
-        char magic[sizeof("HAP")];
+        char magic[sizeof("HAP")] = {0};
         if (homekit_storage_read("magic", (byte *)magic, sizeof(magic))) {
                 ERROR("Failed to read HomeKit storage magic");
+                // magic stays zero-initialized, so the comparison below treats
+                // storage as unformatted rather than reading uninitialized memory.
         }
 
         if (strncmp(magic, "HAP", sizeof(magic)) != 0) {

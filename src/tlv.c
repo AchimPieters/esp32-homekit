@@ -221,19 +221,28 @@ int tlv_format(const tlv_values_t *values, byte *buffer, size_t *size) {
 int tlv_parse(const byte *buffer, size_t length, tlv_values_t *values) {
         size_t i = 0;
         while (i < length) {
+                // Each TLV item needs at least a type and a length byte.
+                if (i + 2 > length)
+                        return TLV_ERROR_INSUFFICIENT_SIZE;
+
                 byte type = buffer[i];
                 size_t size = 0;
                 byte *data = NULL;
 
                 // scan TLVs to accumulate total size of subsequent TLVs with same type (chunked data)
                 size_t j = i;
-                while (j < length && buffer[j] == type && buffer[j+1] == 255) {
+                while (j + 2 <= length && buffer[j] == type && buffer[j+1] == 255) {
                         size_t chunk_size = buffer[j+1];
+                        // Each chunk must fit entirely within the buffer.
+                        if (j + 2 + chunk_size > length)
+                                return TLV_ERROR_INSUFFICIENT_SIZE;
                         size += chunk_size;
                         j += chunk_size + 2;
                 }
-                if (j < length && buffer[j] == type) {
+                if (j + 2 <= length && buffer[j] == type) {
                         size_t chunk_size = buffer[j+1];
+                        if (j + 2 + chunk_size > length)
+                                return TLV_ERROR_INSUFFICIENT_SIZE;
                         size += chunk_size;
                 }
 
@@ -247,15 +256,32 @@ int tlv_parse(const byte *buffer, size_t length, tlv_values_t *values) {
 
                         size_t remaining = size;
                         while (remaining) {
+                                // Re-validate before every read; the bounds were
+                                // checked in the scan above, but guard defensively.
+                                if (i + 2 > length) {
+                                        free(data);
+                                        return TLV_ERROR_INSUFFICIENT_SIZE;
+                                }
                                 size_t chunk_size = buffer[i+1];
+                                if (chunk_size > remaining || i + 2 + chunk_size > length) {
+                                        free(data);
+                                        return TLV_ERROR_INSUFFICIENT_SIZE;
+                                }
                                 memcpy(p, &buffer[i+2], chunk_size);
                                 p += chunk_size;
                                 i += chunk_size + 2;
                                 remaining -= chunk_size;
                         }
+                } else {
+                        // Empty value: skip past the type and length bytes.
+                        i += 2;
                 }
 
-                tlv_add_value_(values, type, data, size);
+                if (tlv_add_value_(values, type, data, size)) {
+                        if (data)
+                                free(data);
+                        return TLV_ERROR_MEMORY;
+                }
         }
 
         return 0;

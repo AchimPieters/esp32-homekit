@@ -1,0 +1,57 @@
+name: Static analysis
+
+on:
+  push:
+    branches:
+      - main
+      - work
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  cppcheck:
+    name: cppcheck
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install cppcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cppcheck
+
+      - name: Static analysis gate (portable core modules)
+        shell: bash
+        run: |
+          set -euxo pipefail
+          # Gate only on high-confidence "error" findings, and only for the
+          # portable modules that do not depend on the ESP-IDF / wolfSSL headers
+          # (which are not available in this runner).
+          cppcheck \
+            --std=c11 \
+            --error-exitcode=1 \
+            --quiet \
+            --inline-suppr \
+            --suppress=missingInclude \
+            --suppress=missingIncludeSystem \
+            -Iinclude -Isrc \
+            src/base64.c src/bitset.c src/query_params.c src/tlv.c
+
+      - name: Static analysis (informational, full tree)
+        shell: bash
+        continue-on-error: true
+        run: |
+          set -uxo pipefail
+          # Best-effort, non-blocking scan of the whole src/ tree. External
+          # platform headers are missing here, so this is for visibility only.
+          cppcheck \
+            --std=c11 \
+            --enable=warning,portability,performance \
+            --quiet \
+            --inline-suppr \
+            --suppress=missingInclude \
+            --suppress=missingIncludeSystem \
+            -Iinclude -Isrc \
+            src/

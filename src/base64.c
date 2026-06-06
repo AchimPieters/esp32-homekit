@@ -45,7 +45,7 @@ unsigned char base64_decode_char(unsigned char c) {
         if (c == '=')
                 return 64;
 
-        return 0;
+        return 0xFF; // invalid character marker
 }
 
 size_t base64_encoded_size(const unsigned char *data, size_t size) {
@@ -97,8 +97,20 @@ int base64_decode(const unsigned char* encoded_data, size_t encoded_size, unsign
         size_t i=0, j=0;
         for (; i<encoded_size; i+=4) {
                 unsigned char block[4];
-                for (size_t k=0; k<4; k++)
+                for (size_t k=0; k<4; k++) {
                         block[k] = base64_decode_char(encoded_data[i+k]);
+                        if (block[k] == 0xFF)
+                                return -1; // invalid character
+                }
+
+                // Padding ('=') may only appear in the final block, and the
+                // first two characters of any block must be data characters.
+                if (block[0] == 64 || block[1] == 64)
+                        return -1;
+                if ((block[2] == 64 || block[3] == 64) && i + 4 != encoded_size)
+                        return -1;
+                if (block[2] == 64 && block[3] != 64)
+                        return -1; // "xx=y" is malformed
 
                 data[j++] = (block[0]<<2) + (block[1]>>4);
                 if (block[2] == 64)

@@ -3075,7 +3075,7 @@
 
                  cJSON *j_events = cJSON_GetObjectItem(j_ch, "ev");
                  if (j_events) {
-                         if (!(ch->permissions && homekit_permissions_notify)) {
+                         if (!(ch->permissions & homekit_permissions_notify)) {
                                  CLIENT_ERROR(context, "Failed to set notification state for %d.%d: "
                                               "notifications are not supported", aid, iid);
                                  return HAPStatus_NotificationsUnsupported;
@@ -3906,6 +3906,7 @@
          characteristic_info_t *ch_info = find_characteristic_info_by_characteristic(server, ch);
          if (!ch_info) {
                  ERROR("Trying notify on unknown characteristic \"%s\"", ch->description);
+                 xSemaphoreGive(server->notification_lock);
                  return;
          }
 

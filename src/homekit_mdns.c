@@ -55,6 +55,7 @@
 #include <timers.h>
 
 #include "homekit_mdns_private.h"
+#include "mdns_name.h"
 #include "homekit_mdns.h"
 #include "homekit_mdns_debug.h"
 
@@ -363,26 +364,6 @@ typedef enum {
 } name_t;
 
 
-static int mdns_match_label(uint8_t *data, uint16_t size, uint16_t offset, const char *name, uint8_t len) {
-        while (offset + 1 < size && (data[offset] & 0xC0) == 0xC0) {
-                offset = ((data[offset] & 0x3F) << 8) + data[offset+1];
-                if (offset >= size)
-                        return -1;
-        }
-
-        if (offset + 1 + len > size)
-                return -1;
-
-        if (data[offset] != len)
-                return -1;
-
-        if (len && memcmp(data + 1 + offset, name, len))
-                return -1;
-
-        return offset + 1 + len;
-}
-
-
 static int mdns_match_name(mdns_server_t *server, uint8_t *data, uint16_t size, uint16_t offset, name_t name_id) {
         int x = offset;
         switch (name_id) {
@@ -407,21 +388,6 @@ static int mdns_match_name(mdns_server_t *server, uint8_t *data, uint16_t size, 
                 x = 0;
         }
         return x;
-}
-
-
-static int mdns_skip_name(uint8_t *data, uint16_t size, uint16_t offset) {
-        while (offset < size && data[offset] && !(data[offset] & 0xC0)) {
-                offset += 1 + data[offset];
-        }
-
-        if (offset >= size)
-                return -1;
-
-        if ((data[offset] & 0xC0) == 0xC0)
-                return offset + 2;
-
-        return offset + 1;
 }
 
 
@@ -779,6 +745,10 @@ void mdns_server_done(mdns_server_t *server) {
 
 static void mdns_server_process_query(mdns_server_t *server, uint8_t *data, uint16_t data_len, struct sockaddr *peer_addr, socklen_t peer_addr_len) {
         // LOG_DEBUG("Processing query");
+
+        // Drop runt packets that are too short to contain a DNS header.
+        if (data_len < MDNS_HEADER_SIZE)
+                return;
         // mdns_print_packet(data, data_len);
 
         // uint16_t packet_id = mdns_read_u16(data + 0);

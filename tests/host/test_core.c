@@ -7,6 +7,7 @@
 #include "base64.h"
 #include "bitset.h"
 #include "query_params.h"
+#include "mdns_name.h"
 #include <homekit/tlv.h>
 
 static void test_base64_roundtrip(void) {
@@ -133,6 +134,34 @@ static void test_tlv_parse_rejects_malformed(void) {
     }
 }
 
+static void test_mdns_name_parsing(void) {
+    // "local" label followed by root.
+    uint8_t local[] = {5, 'l','o','c','a','l', 0};
+    assert(mdns_match_label(local, sizeof(local), 0, "local", 5) == 6);
+    assert(mdns_match_label(local, sizeof(local), 0, "wrong", 5) == -1);
+    assert(mdns_match_label(local, sizeof(local), 0, "loc", 3) == -1); // length mismatch
+
+    // Truncated: length byte claims 5 but buffer is too short.
+    uint8_t trunc[] = {5, 'l','o','c'};
+    assert(mdns_match_label(trunc, sizeof(trunc), 0, "local", 5) == -1);
+
+    // Valid compression pointer: offset 0 -> points to offset 4 ("local").
+    uint8_t ptr[] = {0xC0, 0x04, 0x00, 0x00, 5, 'l','o','c','a','l'};
+    assert(mdns_match_label(ptr, sizeof(ptr), 0, "local", 5) == 10);
+
+    // Cyclic compression pointers must terminate (not hang) and report error.
+    uint8_t cyc[] = {0xC0, 0x02, 0xC0, 0x00};
+    assert(mdns_match_label(cyc, sizeof(cyc), 0, "local", 5) == -1);
+
+    // skip_name: normal name, pointer, and truncated.
+    uint8_t name[] = {5, 'l','o','c','a','l', 0};
+    assert(mdns_skip_name(name, sizeof(name), 0) == 7);
+    uint8_t pname[] = {0xC0, 0x00};
+    assert(mdns_skip_name(pname, sizeof(pname), 0) == 2);
+    uint8_t tname[] = {5, 'a', 'b'};
+    assert(mdns_skip_name(tname, sizeof(tname), 0) == -1);
+}
+
 int main(void) {
     test_base64_roundtrip();
     test_base64_rejects_invalid();
@@ -140,6 +169,7 @@ int main(void) {
     test_bitset_boundaries();
     test_tlv_parse_valid();
     test_tlv_parse_rejects_malformed();
+    test_mdns_name_parsing();
 
     puts("host tests passed");
     return 0;

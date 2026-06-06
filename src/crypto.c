@@ -104,11 +104,16 @@ int wc_SrpSetKeyH(Srp *srp, byte *secret, word32 size) {
 
 Srp *crypto_srp_new() {
         Srp *srp = malloc(sizeof(Srp));
+        if (!srp) {
+                DEBUG("Failed to allocate memory for SRP");
+                return NULL;
+        }
 
         DEBUG("Initializing SRP");
         int r = wc_SrpInit(srp, SRP_TYPE_SHA512, SRP_CLIENT_SIDE);
         if (r) {
                 DEBUG("Failed to initialize SRP (code %d)", r);
+                free(srp);
                 return NULL;
         }
         srp->keyGenFunc_cb = wc_SrpSetKeyH;
@@ -153,6 +158,10 @@ int crypto_srp_init(Srp *srp, const char *username, const char *password) {
         DEBUG("Getting SRP verifier");
         word32 verifierLen = 1024;
         byte *verifier = malloc(verifierLen);
+        if (!verifier) {
+                DEBUG("Failed to allocate memory for SRP verifier");
+                return MEMORY_E;
+        }
         r = wc_SrpGetVerifier(srp, verifier, &verifierLen);
         if (r) {
                 DEBUG("Failed to get SRP verifier (code %d)", r);
@@ -340,7 +349,7 @@ int crypto_chacha20poly1305_encrypt(
         size_t len = message_size + CHACHA20_POLY1305_AEAD_AUTHTAG_SIZE;
         if (*encrypted_size < len) {
                 *encrypted_size = len;
-                return -1;
+                return -2;
         }
 
         *encrypted_size = len;
@@ -394,6 +403,7 @@ int crypto_ed25519_generate(ed25519_key *key) {
         }
 
         r = wc_ed25519_make_key(&rng, ED25519_KEY_SIZE, key);
+        wc_FreeRng(&rng);
         if (r) {
                 DEBUG("Failed to generate key (code %d)", r);
                 return r;
@@ -477,13 +487,17 @@ int crypto_ed25519_verify(
         const byte *message, size_t message_size,
         const byte *signature, size_t signature_size
         ) {
-        int verified;
+        int verified = 0;
         int r = wc_ed25519_verify_msg(
                 signature, signature_size,
                 message, message_size,
                 &verified, (ed25519_key *)key
                 );
-        return !r && !verified;
+        // Fail closed: a crypto-layer error must never be treated as a valid
+        // signature. Return 0 only when verification explicitly succeeded.
+        if (r)
+                return r;
+        return verified ? 0 : -1;
 }
 
 
@@ -519,6 +533,7 @@ int crypto_curve25519_generate(curve25519_key *key) {
         }
 
         r = wc_curve25519_make_key(&rng, 32, key);
+        wc_FreeRng(&rng);
         if (r) {
                 crypto_curve25519_done(key);
                 return r;

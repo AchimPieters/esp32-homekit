@@ -296,9 +296,27 @@ void json_string(json_stream *json, const char *x) {
                 return;
 
         void _do_write() {
-                // TODO: escape string
                 json_put(json, '"');
-                json_write(json, x, strlen(x));
+                for (const char *p = x; *p; p++) {
+                        unsigned char c = (unsigned char)*p;
+                        switch (c) {
+                        case '"':  json_write(json, "\\\"", 2); break;
+                        case '\\': json_write(json, "\\\\", 2); break;
+                        case '\b': json_write(json, "\\b", 2); break;
+                        case '\f': json_write(json, "\\f", 2); break;
+                        case '\n': json_write(json, "\\n", 2); break;
+                        case '\r': json_write(json, "\\r", 2); break;
+                        case '\t': json_write(json, "\\t", 2); break;
+                        default:
+                                if (c < 0x20) {
+                                        char buf[7];
+                                        snprintf(buf, sizeof(buf), "\\u%04x", c);
+                                        json_write(json, buf, 6);
+                                } else {
+                                        json_put(json, c);
+                                }
+                        }
+                }
                 json_put(json, '"');
         }
 

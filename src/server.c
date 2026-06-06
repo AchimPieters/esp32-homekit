@@ -76,6 +76,12 @@
  #define HOMEKIT_MAX_CLIENTS 16
  #endif
 
+ // Maximum size of an HTTP request body the server will buffer. Caps memory use
+ // and prevents unauthenticated clients from forcing huge / overflowing allocations.
+ #ifndef HOMEKIT_MAX_BODY_SIZE
+ #define HOMEKIT_MAX_BODY_SIZE 4096
+ #endif
+
  struct _client_context_t;
  typedef struct _client_context_t client_context_t;
 
@@ -174,6 +180,7 @@
 
          char *body;
          size_t body_length;
+         size_t body_capacity;
          bool body_static;
          http_parser parser;
 
@@ -253,6 +260,7 @@
 
          server->body = NULL;
          server->body_length = 0;
+         server->body_capacity = 0;
          server->body_static = false;
          http_parser_init(&server->parser, HTTP_REQUEST);
 
@@ -1054,7 +1062,7 @@
                  int r = crypto_chacha20poly1305_decrypt(
                          context->write_key, nonce, payload+payload_offset, 2,
                          payload+payload_offset+2, chunk_size + 16,
-                         decrypted, &decrypted_len
+                         decrypted + decrypted_offset, &decrypted_len
                          );
                  if (r) {
                          ERROR("Failed to chacha decrypt payload (code %d)", r);
@@ -1344,14 +1352,14 @@
                  char password[11];
                  if (context->server->config->password) {
                          strncpy(password, context->server->config->password, sizeof(password));
-                         CLIENT_DEBUG(context, "Using user-specified password: %s", password);
+                         CLIENT_DEBUG(context, "Using user-specified password");
                  } else {
                          for (int i=0; i<10; i++) {
                                  password[i] = homekit_random() % 10 + '0';
                          }
                          password[3] = password[6] = '-';
                          password[10] = 0;
-                         CLIENT_DEBUG(context, "Using random password: %s", password);
+                         CLIENT_DEBUG(context, "Using random password");
                  }
 
                  if (context->server->config->password_callback) {
@@ -1599,7 +1607,13 @@
                          break;
                  }
 
-                 // TODO: check that tlv_device_id->size == 36
+                 if (tlv_device_id->size != DEVICE_ID_SIZE) {
+                         CLIENT_ERROR(context, "Invalid device identifier size %d (expected %d)",
+                                      tlv_device_id->size, DEVICE_ID_SIZE);
+                         tlv_free(decrypted_message);
+                         send_tlv_error_response(context, 6, TLVError_Authentication);
+                         break;
+                 }
 
                  tlv_t *tlv_device_public_key = tlv_get_value(decrypted_message, TLVType_PublicKey);
                  if (!tlv_device_public_key) {
@@ -2375,6 +2389,16 @@
                          break;
                  }
 
+                 if (tlv_device_id->size != DEVICE_ID_SIZE) {
+                         CLIENT_ERROR(context, "Invalid device identifier size %d (expected %d)",
+                                      tlv_device_id->size, DEVICE_ID_SIZE);
+                         tlv_free(decrypted_message);
+                         pair_verify_context_free(context->verify_context);
+                         context->verify_context = NULL;
+                         send_tlv_error_response(context, 4, TLVError_Authentication);
+                         break;
+                 }
+
                  CLIENT_DEBUG(context, "Searching pairing with %.*s", tlv_device_id->size, tlv_device_id->value);
                  pairing_t pairing;
                  if (homekit_storage_find_pairing((const char *)tlv_device_id->value, &pairing)) {
@@ -2657,6 +2681,7 @@
                 context->server->endpoint_params.ids[id_index].aid != 0) {
                  uint16_t aid = context->server->endpoint_params.ids[id_index].aid;
                  uint16_t iid = context->server->endpoint_params.ids[id_index].iid;
+                 id_index++;
 
                  homekit_characteristic_t *ch = homekit_characteristic_by_aid_and_iid(context->server->config->accessories, aid, iid);
                  if (!ch) {
@@ -2683,8 +2708,6 @@
                          json_string(json, "status"); json_uint8(json, HAPStatus_Success);
                  }
                  json_object_end(json);
-
-                 id_index++;
          }
 
          json_array_end(json);
@@ -3178,6 +3201,12 @@
                          send_tlv_error_response(context, 2, TLVError_Unknown);
                          break;
                  }
+                 if (tlv_device_identifier->size != DEVICE_ID_SIZE) {
+                         CLIENT_ERROR(context, "Invalid pairing request: device identifier size %d (expected %d)",
+                                      tlv_device_identifier->size, DEVICE_ID_SIZE);
+                         send_tlv_error_response(context, 2, TLVError_Unknown);
+                         break;
+                 }
                  tlv_t *tlv_device_public_key = tlv_get_value(message, TLVType_PublicKey);
                  if (!tlv_device_public_key) {
                          CLIENT_ERROR(context, "Invalid add pairing request: no device public key");
@@ -3282,6 +3311,12 @@
                  tlv_t *tlv_device_identifier = tlv_get_value(message, TLVType_Identifier);
                  if (!tlv_device_identifier) {
                          CLIENT_ERROR(context, "Invalid remove pairing request: no device identifier");
+                         send_tlv_error_response(context, 2, TLVError_Unknown);
+                         break;
+                 }
+                 if (tlv_device_identifier->size != DEVICE_ID_SIZE) {
+                         CLIENT_ERROR(context, "Invalid pairing request: device identifier size %d (expected %d)",
+                                      tlv_device_identifier->size, DEVICE_ID_SIZE);
                          send_tlv_error_response(context, 2, TLVError_Unknown);
                          break;
                  }
@@ -3475,6 +3510,12 @@
                                                                          iid = iid * 10 + param.value[pos++] - '0';
                                                                  }
 
+                                                                 if (id_count >= countof(server->endpoint_params.ids)) {
+                                                                         CLIENT_ERROR(context, "Too many characteristic IDs requested (max %d), ignoring the rest",
+                                                                                      (int)countof(server->endpoint_params.ids));
+                                                                         break;
+                                                                 }
+
                                                                  server->endpoint_params.ids[id_count].aid = aid;
                                                                  server->endpoint_params.ids[id_count].iid = iid;
                                                                  id_count++;
@@ -3536,20 +3577,44 @@
 
  int homekit_server_on_body(http_parser *parser, const char *data, size_t length) {
          client_context_t *context = parser->data;
+
          if (!context->server->body && !parser->content_length) {
                  context->server->body = (char *)data;
                  context->server->body_length = length;
                  context->server->body_static = true;
-         } else {
-                 if (!context->server->body) {
-                         context->server->body = malloc(length + parser->content_length + 1);
-                         context->server->body_length = 0;
-                         context->server->body_static = false;
-                 }
-                 memcpy(context->server->body + context->server->body_length, data, length);
-                 context->server->body_length += length;
-                 context->server->body[context->server->body_length] = 0;
+                 return 0;
          }
+
+         if (!context->server->body) {
+                 // First chunk: parser->content_length holds the number of body
+                 // bytes still expected after this chunk. Compute the total in 64-bit
+                 // to avoid truncation/overflow of an attacker-controlled length.
+                 uint64_t total = (uint64_t)length + (uint64_t)parser->content_length;
+                 if (total > HOMEKIT_MAX_BODY_SIZE) {
+                         CLIENT_ERROR(context, "Request body too large (%llu bytes, max %d), aborting",
+                                      (unsigned long long)total, HOMEKIT_MAX_BODY_SIZE);
+                         return 1; // abort HTTP parsing
+                 }
+
+                 context->server->body = malloc((size_t)total + 1);
+                 if (!context->server->body) {
+                         CLIENT_ERROR(context, "Failed to allocate %llu bytes for request body",
+                                      (unsigned long long)total + 1);
+                         return 1;
+                 }
+                 context->server->body_length = 0;
+                 context->server->body_capacity = (size_t)total;
+                 context->server->body_static = false;
+         }
+
+         if (length > context->server->body_capacity - context->server->body_length) {
+                 CLIENT_ERROR(context, "Request body exceeds expected size, aborting");
+                 return 1;
+         }
+
+         memcpy(context->server->body + context->server->body_length, data, length);
+         context->server->body_length += length;
+         context->server->body[context->server->body_length] = 0;
 
          return 0;
  }
@@ -3619,6 +3684,7 @@
                          free(context->server->body);
                  context->server->body = NULL;
                  context->server->body_length = 0;
+                 context->server->body_capacity = 0;
                  context->server->body_static = false;
          }
 
@@ -4285,6 +4351,7 @@
 
                          server->service_infos[service_idx].service = service;
                          if (service->id) {
+                                 server->service_infos[service_idx].iid = service->id;
                                  if (service->id >= iid)
                                          iid = service->id+1;
                          } else {
@@ -4297,6 +4364,7 @@
                                  server->characteristic_infos[characteristic_idx].ch = ch;
                                  server->characteristic_infos[characteristic_idx].aid = server->accessory_infos[accessory_idx].aid;
                                  if (ch->id) {
+                                         server->characteristic_infos[characteristic_idx].iid = ch->id;
                                          if (ch->id >= iid)
                                                  iid = ch->id+1;
                                  } else {

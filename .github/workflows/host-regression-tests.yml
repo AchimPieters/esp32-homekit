@@ -23,6 +23,7 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
+          # Portable core modules: strict ISO C11.
           gcc -std=c11 -Wall -Wextra -Werror -pedantic -Wno-strict-prototypes \
             -fsanitize=address,undefined -fno-omit-frame-pointer \
             -Iinclude -Isrc \
@@ -31,3 +32,18 @@ jobs:
             -o /tmp/homekit-host-tests
           ASAN_OPTIONS=detect_leaks=1 UBSAN_OPTIONS=halt_on_error=1 \
             /tmp/homekit-host-tests
+
+      - name: Compile and run camera protocol tests
+        shell: bash
+        run: |
+          set -euxo pipefail
+          # The public homekit headers use GNU extensions (## __VA_ARGS__,
+          # compound literals), so the camera tests build as gnu11.
+          gcc -std=gnu11 -Wall -Wextra -Werror -Wno-strict-prototypes \
+            -fsanitize=address,undefined -fno-omit-frame-pointer \
+            -Iinclude -Isrc \
+            tests/host/test_camera.c \
+            src/camera.c src/tlv.c src/accessories.c \
+            -o /tmp/homekit-camera-tests
+          ASAN_OPTIONS=detect_leaks=1 UBSAN_OPTIONS=halt_on_error=1 \
+            /tmp/homekit-camera-tests

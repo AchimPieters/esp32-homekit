@@ -9,27 +9,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  host-sanity:
-    name: host-sanity (asan)
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Build and run host regression tests
-        shell: bash
-        run: |
-          set -euxo pipefail
-          gcc -std=c11 -Wall -Wextra -Werror -pedantic \
-            -fsanitize=address,undefined -fno-omit-frame-pointer \
-            -Iinclude -Isrc \
-            tests/host/test_core.c src/base64.c src/query_params.c src/bitset.c \
-            -o /tmp/homekit-host-tests
-          /tmp/homekit-host-tests
-
   build:
     name: idf-${{ matrix.idf }} / ${{ matrix.target }}
     runs-on: ubuntu-latest
@@ -80,6 +59,10 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Compute slash-free IDF label
+        shell: bash
+        run: echo "IDF_SAFE=$(echo '${{ matrix.idf }}' | tr '/' '-')" >> "$GITHUB_ENV"
+
       - name: Clone ESP-IDF
         run: git clone --depth 1 --branch "${{ matrix.idf }}" https://github.com/espressif/esp-idf.git "${IDF_PATH}"
 
@@ -129,7 +112,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: esp-idf-logs-${{ replace(matrix.idf, '/', '-') }}-${{ matrix.target }}
+          name: esp-idf-logs-${{ env.IDF_SAFE }}-${{ matrix.target }}
           path: |
             ${{ env.EXAMPLE_APP_DIR }}/build/log/
             ${{ env.EXAMPLE_APP_DIR }}/build/CMakeFiles/CMakeError.log

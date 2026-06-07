@@ -122,3 +122,78 @@ void on_resource(const char *body, size_t body_size) {
 
 This module gets you a controller that successfully negotiates a session; steps
 1–5 (the media plane) are hardware/codec specific and are your responsibility.
+
+## Live streaming: RTP + SRTP (built-in, tested)
+
+The repository now ships the media-plane primitives needed to send encoded
+video to a controller:
+
+- `include/homekit/srtp.h` / `src/srtp.c` — SRTP sender for the mandatory
+  `SRTP_AES_CM_128_HMAC_SHA1_80` suite. Self-contained (AES-128 / SHA-1 /
+  HMAC-SHA1), validated on the host against **FIPS-197**, **RFC 2202** and the
+  **RFC 3711 §B.3** key-derivation test vectors.
+- `include/homekit/rtp.h` / `src/rtp.c` — H.264 RTP packetizer (RFC 6184:
+  single-NAL and FU-A fragmentation) that SRTP-protects each packet. Validated
+  by a protect → decrypt → NAL-reassembly round-trip in CI.
+
+You still provide the **H.264 source** (`esp_h264` — hardware on ESP32-P4,
+software on ESP32-S3) and the UDP socket. The wiring from `on_stream_start`:
+
+```c
+#include <homekit/rtp.h>
+#include <lwip/sockets.h>
+
+static int           g_sock = -1;
+static struct sockaddr_in g_dest;
+static homekit_rtp_h264_t g_rtp;
+static uint8_t       g_rtp_buf[1378];   // SRTP packet scratch (MTU-sized)
+
+static void udp_send(void *user, const uint8_t *pkt, size_t len) {
+    (void)user;
+    sendto(g_sock, pkt, len, 0, (struct sockaddr *)&g_dest, sizeof(g_dest));
+}
+
+static void on_stream_start(homekit_camera_t *cam, const homekit_camera_session_t *s) {
+    // Destination = controller's video RTP endpoint.
+    g_sock = socket(AF_INET, SOCK_DGRAM, 0);
+    memset(&g_dest, 0, sizeof(g_dest));
+    g_dest.sin_family = AF_INET;
+    g_dest.sin_port   = htons(s->controller.video_port);
+    inet_pton(AF_INET, s->controller.ip_address, &g_dest.sin_addr);
+
+    // The accessory sends video to the controller; encrypt it with the SRTP key
+    // the controller provided for that stream (controller_video_srtp), and use
+    // the accessory video SSRC negotiated during Setup Endpoints.
+    homekit_rtp_h264_init(&g_rtp,
+        s->controller_video_srtp.master_key,
+        s->controller_video_srtp.master_salt,
+        s->video_ssrc,
+        s->selected_video_rtp_payload_type,
+        sizeof(g_rtp_buf), g_rtp_buf,
+        udp_send, NULL);
+
+    // ... start your esp_h264 encoder at s->selected_video.{width,height,fps}
+    //     and s->selected_video_max_bitrate, then in your media task: ...
+}
+
+// Called from your media task for each encoded access unit (Annex-B from
+// esp_h264). ts90k is the capture time in 90 kHz units (RTP video clock).
+static void on_encoded_frame(const uint8_t *au, size_t au_len, uint32_t ts90k) {
+    homekit_rtp_h264_send(&g_rtp, au, au_len, ts90k);
+}
+```
+
+> **SRTP key direction:** HomeKit's Setup Endpoints exchanges SRTP keys for both
+> directions. This example encrypts the outgoing video with
+> `controller_video_srtp` (the key the controller supplied for the stream it
+> receives). The accessory-generated `accessory_*_srtp` keys are for streams the
+> accessory *receives* (e.g. two-way audio). Confirm the exact mapping against
+> your controller during bring-up — the crypto and packetization themselves are
+> covered by the host test vectors.
+
+### What is and isn't verified
+Verified in CI (host): the SRTP crypto (against published vectors) and the
+RTP/FU-A framing (round-trip). **Not** verifiable without hardware + a real
+controller: the camera capture/encode loop, the UDP transport, RTCP feedback,
+and the precise key-direction mapping above. Those are the on-device bring-up
+steps.

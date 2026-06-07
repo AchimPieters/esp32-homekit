@@ -48,3 +48,19 @@ jobs:
             -o /tmp/homekit-camera-tests
           ASAN_OPTIONS=detect_leaks=1 UBSAN_OPTIONS=halt_on_error=1 \
             /tmp/homekit-camera-tests
+
+      - name: Compile and run SRTP / RTP tests
+        shell: bash
+        run: |
+          set -euxo pipefail
+          # SRTP crypto + H.264 RTP packetizer: validated against published
+          # test vectors (FIPS-197, RFC 2202, RFC 3711) plus a protect/decrypt
+          # round-trip. Pure ISO C11.
+          gcc -std=c11 -D_POSIX_C_SOURCE=200809L \
+            -Wall -Wextra -Werror -pedantic -Wno-strict-prototypes \
+            -fsanitize=address,undefined -fno-omit-frame-pointer \
+            -Iinclude -Isrc \
+            tests/host/test_srtp.c \
+            -o /tmp/homekit-srtp-tests
+          ASAN_OPTIONS=detect_leaks=1 UBSAN_OPTIONS=halt_on_error=1 \
+            /tmp/homekit-srtp-tests

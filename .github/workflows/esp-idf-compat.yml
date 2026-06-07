@@ -97,7 +97,7 @@ jobs:
           idf.py --version
           idf.py set-target "${{ matrix.target }}"
           for attempt in 1 2 3; do
-            if idf.py build -v; then
+            if idf.py build; then
               break
             fi
             if [[ "${attempt}" -eq 3 ]]; then

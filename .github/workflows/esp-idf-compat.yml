@@ -35,20 +35,6 @@ jobs:
             target: "esp32c3"
           - idf: "release/v5.3"
             target: "esp32c6"
-          # Latest major line (ESP-IDF v6.0)
-          - idf: "release/v6.0"
-            target: "esp32"
-          - idf: "release/v6.0"
-            target: "esp32s2"
-          - idf: "release/v6.0"
-            target: "esp32s3"
-          - idf: "release/v6.0"
-            target: "esp32c3"
-          - idf: "release/v6.0"
-            target: "esp32c5"
-          - idf: "release/v6.0"
-            target: "esp32c6"
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4

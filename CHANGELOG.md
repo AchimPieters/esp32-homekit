@@ -1,3 +1,8 @@
+## [3.0.1] - 2026-07-29
+
+### Fixed
+- Set `SO_SNDTIMEO` on accepted client sockets. `homekit_server_process_notifications()` holds `server->notification_lock` across its whole client loop, including the blocking `write()` calls; a client that vanished without closing its TCP connection could block that write indefinitely, freezing every `homekit_characteristic_notify()` call from application code until the stale connection was reaped.
+
 ## [2.0.3] - 2026-02-20
 
 ### Added

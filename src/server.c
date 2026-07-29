@@ -3819,6 +3819,15 @@
          const struct timeval rcvtimeout = { 10, 0 }; /* 10 second timeout */
          setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &rcvtimeout, sizeof(rcvtimeout));
 
+         /* Without a send timeout, write() to a client that vanished without
+          * closing the TCP connection (phone leaving Wi-Fi range, app killed,
+          * etc.) can block for minutes. homekit_server_process_notifications()
+          * holds server->notification_lock for the whole client loop, so a
+          * single stuck client blocks every homekit_characteristic_notify()
+          * call from the rest of the firmware until this timeout fires. */
+         const struct timeval sndtimeout = { 2, 0 }; /* 2 second timeout */
+         setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, &sndtimeout, sizeof(sndtimeout));
+
          const int yes = 1; /* enable sending keepalive probes for socket */
          setsockopt(s, SOL_SOCKET, SO_KEEPALIVE, &yes, sizeof(yes));
 
